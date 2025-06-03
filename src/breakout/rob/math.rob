@@ -1,0 +1,24 @@
+/*
+ * Extracted from the Robotics Language Standard Library, under the
+ * Apache License v2.0.
+ */
+
+const uint16_max = 65535u;
+
+int8 abs8(int8 value) inline {
+    mask = value >> 7;
+    value = (value ^ mask) - mask;
+    return value;
+}
+
+random_seed16 = 0xE7A8;
+
+void srandom16(uint16 seed) {
+    random_seed16 = seed;
+}
+
+uint16 random16() {
+  random_seed16 += 0xfc15;
+  n = uint32(random_seed16) * 0x2ab;
+  return uint16((n >> 16) ^ n);
+}

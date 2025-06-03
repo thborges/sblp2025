@@ -1,0 +1,22 @@
+/*
+ * Part of the Robotics Language Standard Library, under the
+ * Apache License v2.0.
+ */
+
+use interrupt;
+
+enum databus_protocol {SPI, I2C, UART, CAN}
+
+interface databus {
+    void setup(uint32 speed);
+    void enable();
+    void disable();
+    void write(uint8 b);
+    void write_array(int8[] data);
+    uint8 read();
+    bool has_data();
+    bool start_transaction(uint16 addr);
+    void end_transaction();
+    databus_protocol get_protocol();
+    void async_read_to(interrupt_i8 i);
+}

@@ -1,0 +1,113 @@
+/*
+ * Robcmp interruptions vector for atmega328p
+ */
+
+int8 main();
+
+void __do_copy_data() naked {
+asm "
+	ldi r17, hi8(__data_end)
+    ldi r26, lo8(__data_start)
+    ldi r27, hi8(__data_start)
+    ldi r30, lo8(__data_load_start)
+    ldi r31, hi8(__data_load_start)
+    rjmp __do_copy_data_start
+	__do_copy_data_loop:
+    	lpm r0, Z+
+	    st  X+, r0
+	__do_copy_data_start:
+    	cpi r26, lo8(__data_end)
+    	cpc r27, r17
+    	brne __do_copy_data_loop
+	ret";
+}
+
+void __do_clear_bss() naked {
+asm "
+	ldi r17, hi8(__bss_end)
+    ldi r26, lo8(__bss_start)
+    ldi r27, hi8(__bss_start)
+    rjmp __do_clear_bss_start
+	__do_clear_bss_loop:
+    	st  X+, r1
+	__do_clear_bss_start:
+    	cpi r26, lo8(__bss_end)
+    	cpc r27, r17
+    	brne __do_clear_bss_loop
+	ret";
+}
+ 
+void __delay_us() naked {
+asm "
+	ldi r18, 5
+	__delay_ms_loop:
+		dec r18
+		brne __delay_ms_loop
+	nop
+	ret";
+}
+
+void __default_irq() naked, section __irqs {
+	asm "jmp __default_irq";
+}
+
+void __vectors() naked, section __isr {
+
+	 /* atmega328p has 26 interruptions */
+	 asm "jmp __init";
+	 asm "jmp __default_irq"; // IRQ0
+	 asm "jmp __default_irq"; // IRQ1
+	 asm "jmp __default_irq"; // PCINT0
+	 asm "jmp __default_irq"; // PCINT1
+	 asm "jmp __default_irq"; // PCINT2
+	 asm "jmp __default_irq"; // Watchdog Timer
+	 asm "jmp __default_irq"; // Timer2 Compare A
+	 asm "jmp __default_irq"; // Timer2 Compare B
+	 asm "jmp __default_irq"; // Timer2 Overflow
+	 asm "jmp __default_irq"; // Timer1 Capture
+	 asm "jmp __default_irq"; // Timer1 Compare A
+	 asm "jmp __default_irq"; // Timer1 Compare B 
+	 asm "jmp __default_irq"; // Timer1 Overflow
+	 asm "jmp __default_irq"; // Timer0 Compare A
+	 asm "jmp __default_irq"; // Timer0 Compare B
+	 asm "jmp __default_irq";//asm "jmp irq_timer0_ovf"; // Timer0 Overflow
+	 asm "jmp __default_irq"; // SPI Transfer Complete
+	 asm "jmp __default_irq";//asm "jmp irq_usart_rx";  // USART, RX Complete
+	 asm "jmp __default_irq"; // USART, UDR Empty
+	 asm "jmp __default_irq";//asm "jmp irq_usart_tx";  // USART, TX Complete
+	 asm "jmp __default_irq"; // ADC Conversion
+	 asm "jmp __default_irq"; // EEPROM Ready
+	 asm "jmp __default_irq"; // Analog Comparator
+	 asm "jmp __default_irq"; // 2-wire Serial Interface
+	 asm "jmp __default_irq"; // Store Program Memory Ready
+	 
+	 asm "__init:";
+	 // clear r1 (zero reg)
+	 asm "clr r1";
+	 // clear sreg
+	 asm "out 0x3f, r1";
+	 // set stack at 0x08FF (0x100+2K-1)
+	 asm "ldi r28, 0xFF";
+	 asm "ldi r29, 0x08";
+	 asm "out 0x3e, r29";
+	 asm "out 0x3d, r28";
+ 
+	 /* same code in .rob, but it produces a larger assembly code
+	 /*register int8 SREG at 0x3f;
+	 register int16 STACK at 0x3d;
+	 SREG = 0;
+	 STACK = 0x08FF;*/
+	 
+	 // copy global vars init data
+	 __do_copy_data();
+ 
+	 // clear zeroed global vars 
+	 __do_clear_bss();
+ 
+	 main();
+ 
+	 // if main returns, disable interruptions and sleep. 
+	 // this is used to quit simavr in our tests
+	 asm "cli";
+	 asm "sleep";
+}

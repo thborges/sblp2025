@@ -1,0 +1,30 @@
+/*
+ * Part of the Robotics Language Standard Library, under the
+ * Apache License v2.0.
+ */
+
+enum port_mode { input = 0, output = 1}
+
+interface digitalport {
+    void mode(port_mode m);
+    void set(bool v);
+    bool get();
+}
+
+interface analogport {
+    void mode(port_mode m);
+    void set(uint16 v);
+    uint16 get();
+}
+
+type void_digitalport implements digitalport {
+    void mode(port_mode m) inline {}
+    void set(bool v) inline {}
+    bool get() inline { return false; }
+}
+
+type void_analogport implements analogport {
+    void mode(port_mode m) inline {}
+    void set(uint16 v) inline {}
+    uint16 get() inline { return 0; }
+}

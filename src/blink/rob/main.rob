@@ -1,0 +1,18 @@
+
+use intfs.mcu;
+use intfs.ports;
+
+// an mcu implementation will be bond here
+mmcu = mcu();
+// the firmware needs a digital port
+led = digitalport();
+
+int16 main() {
+	led.mode(port_mode.output);
+	loop {
+		led.set(true);     // turn on the LED
+		mmcu.wait_ms(100);
+		led.set(false);    // turn off the LED
+		mmcu.wait_ms(100);
+	}
+}

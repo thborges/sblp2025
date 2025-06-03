@@ -1,0 +1,221 @@
+
+use intfs.mcu;
+use intfs.ports;
+use avr5regs;
+
+void __delay_us();
+
+type avr5mcu implements mcu {
+	
+	uint32 clock() inline {
+		return 16E6;
+	}
+
+	void set_interruptions(bool enabled) inline {
+		if enabled {
+			asm "sei";
+		} else  {
+			asm "cli";
+		}
+	}
+
+	b0 implements digitalport {
+		void mode(port_mode m) inline { ddrb.b0 = m; }
+		void set(bool v) inline { portb.b0 = v; }
+		bool get() inline { return portb.b0; }
+	}
+
+	b1 implements digitalport {
+		void mode(port_mode m) inline { ddrb.b1 = m; }
+		void set(bool v) inline { portb.b1 = v; }
+		bool get() inline { return portb.b1; }
+	}
+
+	b2 implements digitalport {
+		void mode(port_mode m) inline { ddrb.b2 = m; }
+		void set(bool v) inline { portb.b2 = v; }
+		bool get() inline { return portb.b2; }
+	}
+
+	b3 implements digitalport {
+		void mode(port_mode m) inline { ddrb.b3 = m; }
+		void set(bool v) inline { portb.b3 = v; }
+		bool get() inline { return portb.b3; }
+	}
+
+	b4 implements digitalport {
+		void mode(port_mode m) inline { ddrb.b4 = m; }
+		void set(bool v) inline { portb.b4 = v; }
+		bool get() inline { return portb.b4; }
+	}
+
+	b5 implements digitalport {
+		void mode(port_mode m) inline { ddrb.b5 = m; }
+		void set(bool v) inline { portb.b5 = v; }
+		bool get() inline { return portb.b5; }
+	}
+
+	void busy_wait_loop5(uint16 count) noopt {
+		/* trusting that ABI will put the count parameter in r25:r24
+		   cycles total: 3 + count*5-1 + 3
+		     +2 (ldi r25:r24 prior to cal) + count*5 - 1 + 3
+		     +1 (ser)
+		     +count*5-1 (loop)
+		     +2 (rjmp)
+		     +1 (ret) */
+		asm "ser r18
+			 loop: subi r18,1
+				   sbci r24,0
+				   sbci r25,0
+				   brne loop
+			 rjmp end
+			 end: "; // a ret is appended here
+	}
+	
+	// secure range 1 -- 5460
+	void wait_ms(uint16 ms) {
+		count = uint16(clock() / 1280e3) * ms - 1;
+		busy_wait_loop5(count);
+	}
+
+	spi implements databus {
+		/* setup hardware SPI at:
+		   b3 = MOSI
+		   b4 = MISO
+		   b5 = SCK */
+		void setup(uint32 speed) {
+			b3.mode(port_mode.output);
+			b4.mode(port_mode.input);
+			b5.mode(port_mode.output);
+			SPCR.MSTR = true; // master
+			
+			//TODO: ignoring speed for now. Set to fsck/4 = 4Mhz
+			SPSR.SPI2x = false;
+			SPCR.SPR0 = false;
+			SPCR.SPR1 = false;
+
+			SPCR.CPOL = false;
+			SPCR.CPHA = false;
+		}
+
+		void async_read_to(interrupt_i8 i) {}
+
+		void enable() {
+			SPCR.SPE = true;
+		}
+
+		void disable() {
+			SPCR.SPE = false;
+		}
+
+		void write(uint8 b) {
+			SPDR = b;
+			while !SPSR.SPIF;
+		}
+
+		void write_array(int8[] data) {
+			i = 0u;
+			while i < data.size {
+				SPDR = uint8(data[i]);
+				while !SPSR.SPIF;
+				i++;
+			}
+		}
+
+		uint8 read() {
+			//TODO: Verify correctness
+			while !SPSR.SPIF;
+			return SPDR;
+		}
+
+		bool has_data() {
+			//TODO: Verify correctness
+			return SPSR.SPIF;
+		}
+
+		bool start_transaction(uint16 address) { return true; }
+		void end_transaction() { return; }
+
+		databus_protocol get_protocol() {
+			return databus_protocol.SPI;
+		}
+	}
+
+	uart0 implements databus {
+
+		void setup(uint32 baud) {
+			// use 2x
+			UCSR0A.U2X0 = false;
+			
+			multipl = 16u;
+			if UCSR0A.U2X0 {
+				multipl = 8u;
+			}
+
+			div = uint32(baud) * multipl;
+			velocity = (clock() / div) - 1;
+
+			// set baudrate
+			UBRR0 = uint16(velocity);
+
+			// 8 bit
+			UCSR0B.UCSZ02 = false;
+			UCSR0C.UCSZ0 = 0x3;
+
+			// no parity
+			UCSR0C.UPM0 = 0x0;
+
+			// 1 stop bit
+			UCSR0C.USBS0 = false;
+		}
+
+		void async_read_to(interrupt_i8 i) {
+			//int_usart_rx = i;
+			UCSR0B.RXCIE0 = true;
+		}
+
+		void enable() {
+			// enable tx and rx
+			UCSR0B.RXEN0 = true;
+			UCSR0B.TXEN0 = true;
+		}
+
+		void disable() {
+			// disable tx and rx
+			UCSR0B.RXEN0 = false;
+			UCSR0B.TXEN0 = false;
+			// disable RX interruption
+			UCSR0B.RXCIE0 = false;
+		}
+
+		void write(uint8 b) inline {
+			while !UCSR0A.UDRE0;
+			UDR0 = b;
+		}
+
+		void write_array(int8[] data) {
+			i = 0u;
+			while i < data.size {
+				write(uint8(data[i]));
+				i++;
+			}
+		}
+
+		uint8 read() inline {
+			while !UCSR0A.RXC0;
+			return UDR0;    
+		}
+
+		bool has_data() inline {
+			return UCSR0A.RXC0;
+		}
+
+		bool start_transaction(uint16 address) inline { return true; }
+		void end_transaction() { }
+		
+		databus_protocol get_protocol() inline {
+			return databus_protocol.UART;
+		}
+	}
+}
+
