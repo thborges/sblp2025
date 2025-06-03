@@ -54,7 +54,7 @@ int8 main() {
         gm.check_level_done(canvas, oled, mmcu);
         oled.update_frame();
         
-        dbus_uart.write('.');
+        dbus_uart.write('@');
         if gm.bar_width == 10 {
             return 0;
         }

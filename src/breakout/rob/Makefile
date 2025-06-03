@@ -28,6 +28,11 @@ passes:
 	robcmp -a atmega328p -Oz -I . main.rob -s avr.rob -bdep > main.ll
 	opt -Oz -stats -disable-output main.ll
 
+test:
+	/usr/bin/time robcmp-simavr-debug -f main.elf -c 16000000 -m atmega328p -hw ssd1306 &> log.txt
+	@tail -n 1 log.txt
+	@fgrep -o @ log.txt | wc -l
+
 clean:
 	rm -f *.s *.ii *.o *.elf
 

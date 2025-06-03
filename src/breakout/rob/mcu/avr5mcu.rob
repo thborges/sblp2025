@@ -7,11 +7,11 @@ void __delay_us();
 
 type avr5mcu implements mcu {
 	
-	uint32 clock() inline {
+	uint32 clock() {
 		return 16E6;
 	}
 
-	void set_interruptions(bool enabled) inline {
+	void set_interruptions(bool enabled) {
 		if enabled {
 			asm "sei";
 		} else  {
@@ -188,7 +188,7 @@ type avr5mcu implements mcu {
 			UCSR0B.RXCIE0 = false;
 		}
 
-		void write(uint8 b) inline {
+		void write(uint8 b) {
 			while !UCSR0A.UDRE0;
 			UDR0 = b;
 		}
@@ -201,19 +201,19 @@ type avr5mcu implements mcu {
 			}
 		}
 
-		uint8 read() inline {
+		uint8 read() {
 			while !UCSR0A.RXC0;
 			return UDR0;    
 		}
 
-		bool has_data() inline {
+		bool has_data() {
 			return UCSR0A.RXC0;
 		}
 
-		bool start_transaction(uint16 address) inline { return true; }
+		bool start_transaction(uint16 address) { return true; }
 		void end_transaction() { }
 		
-		databus_protocol get_protocol() inline {
+		databus_protocol get_protocol() {
 			return databus_protocol.UART;
 		}
 	}
