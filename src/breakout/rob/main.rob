@@ -29,20 +29,22 @@ void setup_hardware() {
 	// init display
 	oled.set_address(0x78);
 	oled.init_display();
-	//oled.clear();
+	oled.clear();
 
     // enable interruptions
     mmcu.set_interruptions(true);
 }
 
-int8 main() {
+int16 main() {
     setup_hardware();
 
     gm = game();
-    k = gm.key_press;
-    dbus_uart.async_read_to(k);
+    //k = gm.key_press;
+    //dbus_uart.async_read_to(k);
     canvas = canvas8();
 
+    dbus_uart.write('^');
+    //updates = 0u;
     loop {
         gm.move_bar(canvas);
 
@@ -54,8 +56,13 @@ int8 main() {
         gm.check_level_done(canvas, oled, mmcu);
         oled.update_frame();
         
-        dbus_uart.write('@');
+        /*updates++;
+        if updates == 0 {
+            dbus_uart.write('-');
+        }*/
+
         if gm.bar_width == 10 {
+            dbus_uart.write('$');
             return 0;
         }
     }

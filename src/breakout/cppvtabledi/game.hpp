@@ -92,7 +92,7 @@ public:
         canvas.fill_rect(c, r, c+block_size-1, r+block_size-1, status);
     }
     
-    void draw_blocks(canvas8 canvas, display *oled, mcu *mmcu) {
+    void draw_blocks(canvas8 canvas, display &oled, mcu &mmcu) {
         // update blocks according to the level
         if (level > 1) {
             uint8_t i = 0u;
@@ -120,13 +120,13 @@ public:
                 col++;
             }
             row++;
-            mmcu->wait_ms(100); // animation effect
-            oled->update_frame();
+            mmcu.wait_ms(100); // animation effect
+            oled.update_frame();
         }
-        oled->update_frame();
+        oled.update_frame();
     }
     
-    void init_level(canvas8 canvas, display *oled, mcu *mmcu) {
+    void init_level(canvas8 canvas, display &oled, mcu &mmcu) {
         start_y = canvas.height() - blocks_rows * block_sizesp;
     
         draw_blocks(canvas, oled, mmcu);
@@ -214,7 +214,7 @@ public:
         }
     }
 
-    void check_level_done(canvas8& canvas, display *oled, mcu *mmcu) {
+    void check_level_done(canvas8& canvas, display &oled, mcu &mmcu) {
         if (rem_blocks == 0) {
             //set_level_debug();
             level = (level+1) % 30;

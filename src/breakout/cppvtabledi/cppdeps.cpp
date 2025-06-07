@@ -28,3 +28,13 @@ extern "C" {
     uint8_t* heap_ptr = (uint8_t*)&__heap_start;
 
 }
+
+void* operator new(size_t size) {
+    void* result = heap_ptr;
+    heap_ptr += size;
+    return result;
+}
+
+void operator delete(void* ptr, unsigned int) noexcept {
+    // no-op or implement free logic
+}

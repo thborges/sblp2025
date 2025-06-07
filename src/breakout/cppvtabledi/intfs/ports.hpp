@@ -5,6 +5,7 @@
 enum class port_mode {input = 0, output = 1};
 
 struct digitalport {
+    //virtual ~digitalport() noexcept = default;
     virtual void mode(port_mode m) = 0;
     virtual void set(bool v) = 0;
     virtual bool get() = 0;

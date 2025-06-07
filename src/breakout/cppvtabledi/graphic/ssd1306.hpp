@@ -2,12 +2,18 @@
 #pragma once
 
 #include "../cppdeps.h"
+#include "../di.hpp"
 #include "../intfs/mcu.hpp"
 #include "../intfs/ports.hpp"
 #include "../intfs/databus.hpp"
 #include "../intfs/buffer8.hpp"
 #include "../intfs/display.hpp"
 #include "../graphic/envelope.hpp"
+
+const auto digitalport_datacmd = [] {};
+const auto digitalport_reset = [] {};
+const auto digitalport_select = [] {};
+const auto named_dbus_display = [] {};
 
 class ssd1306_framebuffer : public buffer8 {
 protected:
@@ -71,10 +77,19 @@ public:
     uint8_t address = 0;
 
 public:
-    ssd1306(mcu& mmcu, digitalport& datacmd, digitalport& reset, digitalport& select,
-        databus& dbus, buffer8& framebuffer) :
-        mmcu(mmcu), datacmd(datacmd), reset(reset), select(select),
-        dbus(dbus), framebuffer(framebuffer) { }
+    BOOST_DI_INJECT(ssd1306, 
+        mcu& mmcu, 
+        (named = digitalport_datacmd) digitalport& datacmd, 
+        (named = digitalport_reset) digitalport& reset, 
+        (named = digitalport_select) digitalport& select,
+        (named = named_dbus_display) databus& dbus,
+        buffer8& framebuffer) :
+        mmcu(mmcu),
+        datacmd(datacmd),
+        reset(reset),
+        select(select),
+        dbus(dbus),
+        framebuffer(framebuffer) { }
 
     enum class commands : uint8_t {
         // powerstate
@@ -152,7 +167,7 @@ public:
             commands::ON
         };
 
-        write_commands(init_commands, sizeof(init_commands)/sizeof(commands));
+        write_commands(init_commands, sizeof(init_commands)/sizeof(uint8_t));
         mmcu.wait_ms(10);
     }
 
@@ -198,6 +213,7 @@ public:
             reset.set(false);
             mmcu.wait_ms(10);
             reset.set(true);
+            mmcu.wait_ms(10);
         }
     }
 

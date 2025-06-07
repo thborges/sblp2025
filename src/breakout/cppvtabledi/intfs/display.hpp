@@ -9,6 +9,7 @@
 enum class displayorientation {NORMAL, NORMAL_MIRRORED, UPSIDE_DOWN, UPSIDE_DOWN_MIRRORED};
 
 struct display {
+    //virtual ~display() noexcept = default;
     virtual uint16_t rows() = 0;
     virtual uint16_t columns() = 0;
     virtual void init_display() = 0;

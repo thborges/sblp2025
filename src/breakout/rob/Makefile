@@ -31,7 +31,7 @@ passes:
 test:
 	/usr/bin/time robcmp-simavr-debug -f main.elf -c 16000000 -m atmega328p -hw ssd1306 &> log.txt
 	@tail -n 1 log.txt
-	@fgrep -o @ log.txt | wc -l
+	@fgrep -o - log.txt | wc -l
 
 clean:
 	rm -f *.s *.ii *.o *.elf

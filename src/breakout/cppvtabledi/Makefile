@@ -1,6 +1,6 @@
-OPTS=-Oz -std=c++23 -nostdlibinc -nostdlib -mmcu=atmega328p -DF_CPU=16000000 -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections
+OPTS=-Oz -nostdlibinc -nostdlib -mmcu=atmega328p -DF_CPU=16000000 -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections -fuse-init-array
 #OPTS+=--save-temps
-#OPTS+=-ggdb -O0
+OPTS+=-gdwarf-4 -O1
 
 AVRDUDECFG=-C ~/.platformio/packages/tool-avrdude@1.60300.200527/avrdude.conf
 AVRDUDEPORT=`ls /dev/cu.usb*`
@@ -12,7 +12,8 @@ all: $(OBJS)
 	ld.lld -nostdlib -Bstatic --gc-sections --lto-whole-program-visibility --lto=thin -L../../common -Tatmega328p.ld -o main.elf $(OBJS) ../../common/avr5.o
 	@#avr-ld -nostdlib -Bstatic --gc-sections -L../../common -Tatmega328p.ld -o main.elf $(OBJS) ../../common/avr5.o
 	avr-size main.elf
-	avr-objdump --no-addresses --demangle -D main.elf > main.S
+	@#avr-objdump --no-addresses --demangle -D main.elf > main.S
+	avr-objdump --demangle -D main.elf > main.S
 
 out/%.o : %.cpp
 	clang++ -target avr $(OPTS) -c $< -o $@

@@ -10,6 +10,7 @@
 enum class databus_protocol {SPI, I2C, UART, CAN};
 
 struct databus {
+    //virtual ~databus() noexcept = default;
     virtual void setup(uint32_t speed) = 0;
     virtual void enable() = 0;
     virtual void disable() = 0;

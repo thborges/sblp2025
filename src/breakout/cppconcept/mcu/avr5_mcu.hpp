@@ -27,7 +27,7 @@ public:
             *ddr |= (1 << field);
     }
 
-    __attribute__((always_inline)) void set(bool value) {
+    void set(bool value) {
         volatile uint8_t* port = reinterpret_cast<volatile uint8_t*>(port_addr);
         if (value)
             *port |= (1 << field);
@@ -35,7 +35,7 @@ public:
             *port &= ~(1 << field);
     }
 
-    __attribute__((always_inline)) bool get() {
+    bool get() {
         volatile uint8_t* port = reinterpret_cast<volatile uint8_t*>(port_addr);
         return (*port & (1 << field)) != 0;
     }
@@ -46,11 +46,13 @@ class avr5_spi final {
     digitalport *b3;
     digitalport *b4;
     digitalport *b5;
+    digitalport *ss;
 public:
-    avr5_spi(digitalport *mosi, digitalport *miso, digitalport *sck) {
-        b3 = mosi;
-        b4 = miso;
-        b5 = sck;
+    avr5_spi(digitalport *mosi, digitalport *miso, digitalport *sck, digitalport *ss) {
+        this->b3 = mosi;
+        this->b4 = miso;
+        this->b5 = sck;
+        this->ss = ss;
     }
     /* setup hardware SPI at:
        b3 = MOSI
@@ -60,6 +62,10 @@ public:
         b3->mode(port_mode::output);
         b4->mode(port_mode::input);
         b5->mode(port_mode::output);
+
+        // SS must be high when setting master mode
+        ss->mode(port_mode::output);
+        ss->set(true);
         SPCR->MSTR = true; // master
         
         //TODO: ignoring speed for now. Set to fsck/4 = 4Mhz
@@ -81,7 +87,7 @@ public:
         SPCR->SPE = false;
     }
 
-    __attribute((always_inline)) void write(uint8_t b) {
+    void write(uint8_t b) {
         *SPDR = b;
         while (!SPSR->SPIF);
     }
@@ -95,13 +101,13 @@ public:
         }
     }
 
-    __attribute((always_inline)) uint8_t read() {
+    uint8_t read() {
         //TODO: Verify correctness
         while (!SPSR->SPIF);
         return *SPDR;
     }
 
-    __attribute((always_inline)) bool has_data() {
+    bool has_data() {
         //TODO: Verify correctness
         return SPSR->SPIF;
     }
@@ -109,7 +115,7 @@ public:
     bool start_transaction(uint16_t address) { return true; }
     void end_transaction() { return; }
 
-    __attribute((always_inline)) databus_protocol get_protocol() {
+    databus_protocol get_protocol() {
         return databus_protocol::SPI;
     }
 };
@@ -233,7 +239,7 @@ public:
         b3(DDRB, PORTB, 3),
         b4(DDRB, PORTB, 4),
         b5(DDRB, PORTB, 5),
-        spi(&b3, &b4, &b5),
+        spi(&b3, &b4, &b5, &b2),
         uart0(this->clock()) {
     }
 };

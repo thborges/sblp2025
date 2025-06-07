@@ -205,25 +205,8 @@ type ssd1306 implements display {
     }
 
     void clear() {
-        reset_cursor(0, 0, columns()-1, rows()-1);
-        
-        datacmd.set(true);
-        select.set(false);
-        zero_data = {0:128};
-
-        dbus.start_transaction(address);
-        if (dbus.get_protocol() == databus_protocol.I2C) {
-            dbus.write(i2c_control.DATA_STREAM);
-        }
-
-        i = 0u;
-		while i < framebuffer.height() {
-			dbus.write_array(zero_data);
-			i++;
-		}
-
-        dbus.end_transaction();
-        select.set(true);
+        framebuffer.clear();
+        update_frame();
     }
 
     void update_frame() {

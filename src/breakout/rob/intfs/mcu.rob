@@ -5,6 +5,7 @@
 
 interface mcu {
     void wait_ms(uint16 ms);
+    void wait_us(uint16 us);
     void set_interruptions(bool enabled);
     uint32 clock();
 }

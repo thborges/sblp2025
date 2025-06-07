@@ -8,6 +8,7 @@
 #include "../graphic/envelope.hpp"
 
 struct buffer8 {
+    //virtual ~buffer8() noexcept = default;
     virtual uint16_t height() = 0;
     virtual uint16_t width() = 0;
     virtual void clear() = 0;

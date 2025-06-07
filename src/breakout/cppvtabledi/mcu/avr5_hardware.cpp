@@ -14,8 +14,7 @@ void busy_wait_loop5(uint16_t count) {
 	//   +2 (rjmp)
 	//   +1 (ret)
 	asm ("ser r18\n"
-		 "__busy_wait_loop5_loop:\n"
-		 "     subi r18,1\n"
+		 "__busy_wait_loop5_loop: subi r18,1\n"
 		 "	   sbci r24,0\n"
 		 "	   sbci r25,0\n"
 		 "	   brne __busy_wait_loop5_loop\n"
@@ -137,7 +136,7 @@ void __vectors() {
 	 // clear zeroed global vars 
 	 asm("call __do_clear_bss");
 	 
-	 //asm("call run_constructors");
+	 asm("call run_init_array");
 	 asm("call main");
  
 	 // if main returns, disable interruptions and sleep. 
@@ -145,3 +144,61 @@ void __vectors() {
 	 asm("cli");
 	 asm("sleep");
  }
+
+extern "C" {
+
+	__attribute((naked)) void run_init_array(void) {
+		asm (
+	    	".extern __init_array_start\n"
+			".extern __init_array_end\n"
+			"ldi r26, lo8(__init_array_start)\n" // load start into X
+    		"ldi r27, hi8(__init_array_start)\n"
+    		"ldi r28, lo8(__init_array_end)\n" // load end into Y
+    		"ldi r29, hi8(__init_array_end)\n"
+			"loop_init_array:\n"
+    		"	cp  r26, r28\n" // Z >= end?
+    		"	cpc r27, r29\n"
+    		"	brcc end_init_array\n"
+
+			"   movw r30, r26\n" // put X into Z
+    		"	lpm r24, Z+\n"   // load Z addr from flash into r24:r25
+    		"	lpm r25, Z+\n"
+			"   movw r26, r30\n" // save next Z into X
+			"	movw r30, r24\n" // move r24:r25 (function pointer) to Z
+    		"	icall\n"
+
+    		"	rjmp loop_init_array\n"
+
+			"end_init_array: ret\n" // ret added here
+		);
+	}
+
+	/* same as above, one more instruction */
+	/*static inline uint16_t pgm_read_word(const uint16_t *addr) {
+		uint16_t result;
+		asm volatile (
+			"lpm %A0, Z+\n\t"
+			"lpm %B0, Z"
+			: "=r" (result)
+			: "Z" (addr)
+		);
+		return result;
+	}
+
+	typedef void (*constructor_t)(void);
+
+	#define PROGMEM  __attribute__((section(".progmem1.data")))
+	extern constructor_t __init_array_start[] PROGMEM;
+	extern constructor_t __init_array_end[] PROGMEM;
+
+	__attribute((naked)) void run_init_array(void) {
+		constructor_t *ctor = __init_array_start;
+
+		while (ctor < __init_array_end) {
+			// Read function pointer from program memory
+			constructor_t func = (constructor_t)pgm_read_word((uint16_t*)ctor);
+			func();
+			ctor++;
+		}
+	}*/
+}

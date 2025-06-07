@@ -34,7 +34,7 @@ public:
 
     void clear_pixel(uint16_t row, uint16_t col) {
         auto rowb = row/8;
-        assert(col < buffer->width() && rowb < buffer->height() && "outside buffer bounds");
+        assert(col < buffer.width() && rowb < buffer.height() && "outside buffer bounds");
         auto v = buffer.get(rowb, col);
         buffer.set(rowb, col, v & ~(1 << uint8_t(row & 7)));
     }

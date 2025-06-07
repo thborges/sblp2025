@@ -31,7 +31,7 @@ void setup_hardware(mcu *mmcu, uart *dbus_uart, displaydb *dbus_display,
 	// init display
 	oled->set_address(0x78);
 	oled->init_display();
-	//oled.clear();
+	oled->clear();
 
     // enable interruptions
     mmcu->set_interruptions(true);
@@ -49,6 +49,9 @@ int main() {
     //k = gm.key_press;
     //dbus_uart.async_read_to(k);
 
+    mmcu.uart0.write('^');
+    uint8_t updates = 0;
+
     while (true) {
         gm.move_bar(canvas);
 
@@ -60,8 +63,13 @@ int main() {
         gm.check_level_done(canvas, &oled, &mmcu);
         oled.update_frame();
 
-        mmcu.uart0.write('@');
+        updates++;
+        if (updates == 0) {
+            mmcu.uart0.write('-');
+        }
+
         if (gm.bar_width == 10) {
+            mmcu.uart0.write('$');
             return 0;
         }
     }

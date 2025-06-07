@@ -1,4 +1,6 @@
 
+#include "../cppdeps.h"
+//#include "../di.hpp"
 #include "../intfs/mcu.hpp"
 #include "../intfs/ports.hpp"
 #include "../intfs/databus.hpp"
@@ -31,24 +33,31 @@ public:
     }
 };
 
+const auto avr5_mosi = []{};
+const auto avr5_miso = []{};
+const auto avr5_sck = []{};
+
 class avr5_spi : public databus {
-    digitalport *b3;
-    digitalport *b4;
-    digitalport *b5;
+    digitalport& mosi;
+    digitalport& miso;
+    digitalport& sck;
+    digitalport &ss;
 public:
-    avr5_spi(digitalport *mosi, digitalport *miso, digitalport *sck) {
-        b3 = mosi;
-        b4 = miso;
-        b5 = sck;
-    }
+    avr5_spi(digitalport& mosi, digitalport& miso, digitalport& sck, digitalport &ss) : 
+        mosi(mosi), miso(miso), sck(sck), ss(ss) {}
+
     /* setup hardware SPI at:
        b3 = MOSI
        b4 = MISO
        b5 = SCK */
     void setup(uint32_t speed) override {
-        b3->mode(port_mode::output);
-        b4->mode(port_mode::input);
-        b5->mode(port_mode::output);
+        mosi.mode(port_mode::output);
+        miso.mode(port_mode::input);
+        sck.mode(port_mode::output);
+        
+        // SS must be high when setting master mode
+        ss.mode(port_mode::output);
+        ss.set(true);
         SPCR->MSTR = true; // master
         
         //TODO: ignoring speed for now. Set to fsck/4 = 4Mhz
@@ -104,10 +113,9 @@ public:
 };
 
 class avr5_uart0 : public databus {
-    mcu *mmcu;
+    mcu& mmcu;
 public:
-    avr5_uart0(mcu *m) {
-        mmcu = m;
+    avr5_uart0(mcu& mmcu) : mmcu(mmcu) {
     }
 
     void setup(uint32_t baud) override {
@@ -120,7 +128,7 @@ public:
         }
 
         auto div = uint32_t(baud) * multipl;
-        auto velocity = (mmcu->clock() / div) - 1;
+        auto velocity = (mmcu.clock() / div) - 1;
 
         // set baudrate
         *UBRR0 = uint16_t(velocity);
@@ -185,7 +193,6 @@ public:
     }
 };
 
-
 class avr5mcu : public mcu {
 public:
 
@@ -205,17 +212,11 @@ public:
         uint16_t count = (uint16_t)(clock() / 1280000) * ms - 1;
         busy_wait_loop5(count);
 	}
-
-    avr5mcu_port<DDRB, PORTB, 0> b0;
-    avr5mcu_port<DDRB, PORTB, 1> b1;
-    avr5mcu_port<DDRB, PORTB, 2> b2;
-    avr5mcu_port<DDRB, PORTB, 3> b3;
-    avr5mcu_port<DDRB, PORTB, 4> b4;
-    avr5mcu_port<DDRB, PORTB, 5> b5;
-
-    avr5_spi spi;
-    avr5_uart0 uart0;
-
-    avr5mcu(): spi(&b3, &b4, &b5), uart0(this) {
-    }
 };
+
+class avr5mcu_b0 : public avr5mcu_port<DDRB, PORTB, 0> {};
+class avr5mcu_b1 : public avr5mcu_port<DDRB, PORTB, 1> {};
+class avr5mcu_b2 : public avr5mcu_port<DDRB, PORTB, 2> {};
+class avr5mcu_b3 : public avr5mcu_port<DDRB, PORTB, 3> {};
+class avr5mcu_b4 : public avr5mcu_port<DDRB, PORTB, 4> {};
+class avr5mcu_b5 : public avr5mcu_port<DDRB, PORTB, 5> {};

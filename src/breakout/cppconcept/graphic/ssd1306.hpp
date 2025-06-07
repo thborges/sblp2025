@@ -18,8 +18,8 @@ public:
         clear();
     }
 
-    inline uint16_t height() { return 8; }
-    inline uint16_t width() { return 128; }
+    uint16_t height() { return 8; }
+    uint16_t width() { return 128; }
     
     void clear() {
         uint8_t row = 0u;
@@ -31,17 +31,23 @@ public:
             }
             row++;
         }
+        changes.expand(0,0);
+        changes.expand(width()-1, height()-1);
+    }
+
+    void reset_changes() {
+        changes.clear();
     }
 
     envelope_u16 get_changes() {
         return changes;
     }
 
-    __attribute((always_inline)) uint8_t get(uint16_t row, uint16_t col) {
+    uint8_t get(uint16_t row, uint16_t col) {
         return buff[row][col];
     }
     
-    __attribute((always_inline)) void set(uint16_t row, uint16_t col, uint8_t v) {
+    void set(uint16_t row, uint16_t col, uint8_t v) {
         buff[row][col] = v;
         changes.expand(col, row);
     }
@@ -143,7 +149,7 @@ public:
             commands::SET_COM_SCAN_INVERTED,
             commands::SET_WIRING_SCHEME, (commands)0x12,
             commands::SET_CONTRAST, (commands)0x8F,
-            commands::SET_PRECHARGE_PERIOD, (commands)0xF1,
+            commands::SET_PRECHARGE_PERIOD, (commands)0x22,
             commands::SET_VCOM_DESELECT_LEVEL, (commands)0x40,
             commands::RESUME_TO_RAM_CONTENT,
             commands::DISPLAY_MODE_NORMAL,
@@ -225,25 +231,8 @@ public:
     }
 
     void clear() {
-        reset_cursor(0, 0, columns()-1, rows()-1);
-        
-        datacmd->set(true);
-        select->set(false);
-        char zero_data[128] = {0};
-
-        dbus->start_transaction(address);
-        if (dbus->get_protocol() == databus_protocol::I2C) {
-            //dbus.write(i2c_control.DATA_STREAM);
-        }
-
-        uint8_t i = 0u;
-		while (i < framebuffer.height()) {
-			dbus->write_array(zero_data, 128);
-			i++;
-		}
-
-        dbus->end_transaction();
-        select->set(true);
+        framebuffer.clear();
+        update_frame();
     }
 
     void update_frame() {
@@ -273,6 +262,6 @@ public:
         
         dbus->end_transaction();
         select->set(true);
-        ev.clear();
+        framebuffer.reset_changes();
     }
 };
