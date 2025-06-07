@@ -6,8 +6,6 @@ use intfs.ports;
 use intfs.mcu;
 use intfs.display;
 use intfs.databus;
-
-use graphic.canvas8;
 use game;
 
 mmcu = mcu();
@@ -19,6 +17,7 @@ void setup_hardware() {
     // dbus_serial setup
     dbus_uart.setup(115200);
     dbus_uart.enable();
+    dbus_uart.write('^');
     dbus_uart.write_array("Robcmp Breakout Game for SSD1306 肖\n");
     dbus_uart.write_array("Use left/right arrows to move and space to pause.\n");
 
@@ -41,25 +40,10 @@ int16 main() {
     gm = game();
     //k = gm.key_press;
     //dbus_uart.async_read_to(k);
-    canvas = canvas8();
 
-    dbus_uart.write('^');
-    //updates = 0u;
     loop {
-        gm.move_bar(canvas);
-
-        if !gm.paused and !gm.gameover {
-            //mmcu.wait_ms(20);
-            gm.move_ball(canvas);
-        }
-
-        gm.check_level_done(canvas, oled, mmcu);
+        gm.process_game();
         oled.update_frame();
-        
-        /*updates++;
-        if updates == 0 {
-            dbus_uart.write('-');
-        }*/
 
         if gm.bar_width == 10 {
             dbus_uart.write('$');

@@ -153,7 +153,6 @@ public:
         };
 
         write_commands(init_commands, sizeof(init_commands)/sizeof(commands));
-        mmcu.wait_ms(10);
     }
 
     void set_orientation(displayorientation o) {

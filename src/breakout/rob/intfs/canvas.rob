@@ -1,0 +1,13 @@
+/*
+ * Part of the Robotics Language Standard Library, under the
+ * Apache License v2.0.
+ */
+ 
+interface canvas {
+    uint16 height();
+    uint16 width();
+    void clear();
+    void set_pixel(uint16 row, uint16 col);
+    void clear_pixel(uint16 row, uint16 col);
+    void fill_rect(uint16 x1, uint16 y1, uint16 x2, uint16 y2, bool v);
+}

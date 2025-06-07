@@ -7,9 +7,13 @@
 #include "graphic/canvas8.hpp"
 #include "math.hpp"
 
-template<buffer8 bufferimpl, display display, mcu mcu>
+template<buffer8 bufferimpl, display displayimpl, mcu mcuimpl>
 class game {
-public:
+private:
+    canvas8<bufferimpl>& canvas;
+    displayimpl& display;
+    mcuimpl& mmcu;
+
     // Bar related vars
     uint8_t bar_middle = 0u;
     uint8_t bar_width = 30u;
@@ -42,7 +46,22 @@ public:
     const uint8_t blocks_cols = 25;
     bool blocks[5][25] = {};
 
-    void move_bar(canvas8<bufferimpl> canvas) {
+public:
+    game(canvas8<bufferimpl>& canvas, displayimpl& display, mcuimpl& mmcu) :
+        canvas(canvas), display(display), mmcu(mmcu) {}
+
+    void process_game() {
+        move_bar();
+
+        if (!paused && !gameover) {
+            //mmcu.wait_ms(20);
+            move_ball();
+        }
+
+        check_level_done();
+    }
+
+    void move_bar() {
         if (bar_next_move == 0) {
             return;
         }
@@ -86,14 +105,14 @@ public:
         }
     }
 
-    void update_block(canvas8<bufferimpl> canvas, uint8_t row, uint8_t col) {
+    void update_block(uint8_t row, uint8_t col) {
         auto c = col * (block_size+1);
         auto r = start_y + row * (block_size+1);
         auto status = blocks[row][col];
         canvas.fill_rect(c, r, c+block_size-1, r+block_size-1, status);
     }
     
-    void draw_blocks(canvas8<bufferimpl> canvas, display *oled, mcu *mmcu) {
+    void draw_blocks() {
         // update blocks according to the level
         if (level > 1) {
             uint8_t i = 0u;
@@ -114,23 +133,23 @@ public:
                     bool v = !blocks[row][col];
                     blocks[row][col] = v;
                 }
-                update_block(canvas, row, col);
+                update_block(row, col);
                 if (blocks[row][col]) {
                     rem_blocks++;
                 }
                 col++;
             }
             row++;
-            mmcu->wait_ms(100); // animation effect
-            oled->update_frame();
+            //mmcu.wait_ms(100); // animation effect
+            display.update_frame();
         }
-        oled->update_frame();
+        //display.update_frame();
     }
     
-    void init_level(canvas8<bufferimpl> canvas, display *oled, mcu *mmcu) {
+    void init_level() {
         start_y = canvas.height() - blocks_rows * block_sizesp;
     
-        draw_blocks(canvas, oled, mmcu);
+        draw_blocks();
     
         // hide current bar
         uint8_t start = bar_middle - bar_width/2;
@@ -152,7 +171,7 @@ public:
         canvas.fill_rect(ball_pos_x - 1, ball_pos_y - 1, ball_pos_x, ball_pos_y, true);
     }
     
-    void move_ball(canvas8<bufferimpl> canvas) {
+    void move_ball() {
         canvas.fill_rect(ball_pos_x - 1, ball_pos_y - 1, ball_pos_x, ball_pos_y, false);
     
         // ball_pos_{x,y} represents the top right pixel of the ball
@@ -175,7 +194,7 @@ public:
 
                 blocks[brow][bcol] = false;
                 rem_blocks--;
-                update_block(canvas, brow, bcol);
+                update_block(brow, bcol);
 
                 auto hit_y = (ball_pos_y + 1 - start_y) % block_sizesp == 0;
                 auto hit_x = ball_pos_x % block_sizesp == 0;
@@ -215,15 +234,19 @@ public:
         }
     }
 
-    void check_level_done(canvas8<bufferimpl> canvas, display *oled, mcu *mmcu) {
+    void check_level_done() {
         if (rem_blocks == 0) {
             //set_level_debug();
             level = (level+1) % 30;
-            init_level(canvas, oled, mmcu);
+            init_level();
             //paused = true;
         }
     }
 
+    uint8_t get_bar_width() {
+        return bar_width;
+    }
+    
     /*key_press implements interrupt_i8 {
         void handler(uint8 key) {
             if gameover {

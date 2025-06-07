@@ -3,6 +3,7 @@
  * Apache License v2.0.
  */
 
+use intfs.canvas;
 use intfs.buffer8;
 
 void assert(bool a, char[] message) noinline, debugonly {
@@ -10,7 +11,7 @@ void assert(bool a, char[] message) noinline, debugonly {
     if (!a) { loop {} }
 }
 
-type canvas8 {
+type canvas8 implements canvas {
     buffer = buffer8();
 
     uint16 width() inline {

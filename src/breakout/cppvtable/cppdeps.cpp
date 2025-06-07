@@ -3,11 +3,6 @@
 
 extern "C" {
     void __cxa_pure_virtual() {}
-    int __cxa_guard_acquire(uint64_t* g) { return !*g; }
-    void __cxa_guard_release(uint64_t* g) { *g = 1; }
-    void __cxa_guard_abort(uint64_t*) {}
-    
-    int atexit(void (*func)(void)) { return 0; }
 
     size_t strlen(const char* s) {
         const char* p = s;
@@ -23,8 +18,4 @@ extern "C" {
         }
         return dest;
     }
-
-    extern uint8_t __heap_start;
-    uint8_t* heap_ptr = (uint8_t*)&__heap_start;
-
 }

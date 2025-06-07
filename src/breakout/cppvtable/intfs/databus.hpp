@@ -22,4 +22,4 @@ struct databus {
     virtual databus_protocol get_protocol() = 0;
     virtual void async_read_to(interrupt_i8 *i) = 0;
 };
- 
+

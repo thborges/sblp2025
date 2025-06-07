@@ -1,5 +1,5 @@
-Loaded 8762 bytes at 0
-Loaded 293 bytes at 223a
+Loaded 8408 bytes at 0
+Loaded 293 bytes at 20d8
 UART: 0 configured to 0007 = 125000.0000 bps (x1), 8 data 1 stop
 UART: Roughly 88 usec per byte
 simavr: sleeping with interrupts off, quitting gracefully
@@ -7,16 +7,15 @@ Firmware main.elf f=0 mmcu=
 MCU used was: atmega328p
 SPI init
 Starting an pty at uart0...
-uart_pty_init bridge on port *** /dev/ttys003 ***
-uart_pty_connect: /tmp/simavr-uart0 now points to /dev/ttys003
+uart_pty_init bridge on port *** /dev/ttys012 ***
+uart_pty_connect: /tmp/simavr-uart0 now points to /dev/ttys012
 note: export SIMAVR_UART_XTERM=1 and install picocom to get a terminal
 SSD1306: 37uS is 592 cycles for your AVR
 SSD1306: 1uS is 16 cycles for your AVR
 Launching avr firmware with trace 0...
 Starting hardware...
-[32mRobcmp Breakout Game for SSD1306 肖.
+[32m^Robcmp Breakout Game for SSD1306 肖.
 [0m[32mUse left/right arrows to move and space to pause..
-[0m[32m^---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 [0mTerminating simavr...
 Return value 0
-       10.75 real        11.37 user         0.43 sys
+        7.58 real         7.97 user         0.30 sys

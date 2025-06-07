@@ -4,11 +4,14 @@
 
 use math;
 use intfs.mcu;
+use intfs.canvas;
 use intfs.display;
-use graphic.canvas8;
-
 
 type game {
+    // mcu, canvas and display
+     mmcu = mcu();
+     ddisplay = display();
+     ccanvas = canvas();
 
     // Bar related vars
      bar_middle = 0u;
@@ -39,7 +42,16 @@ type game {
      const right_margin = 25 * block_sizesp - 1;
      blocks = {{true:25}:5};
 
-    void move_bar(canvas8 canvas) {
+    void process_game() {
+        move_bar();
+        if !paused and !gameover {
+            //mmcu.wait_ms(20);
+            move_ball();
+        }
+        check_level_done();
+    }
+
+    void move_bar() {
         if bar_next_move == 0 {
             return;
         }
@@ -65,11 +77,11 @@ type game {
         end = start + bar_width - 1;
         set = pixels > 0;
         if pixels < 0 {
-            canvas.fill_rect(start, bottom_margin-4, start+move-1, bottom_margin-2, true);
-            canvas.fill_rect(end+1, bottom_margin-4, end+move, bottom_margin-2, false);
+            ccanvas.fill_rect(start, bottom_margin-4, start+move-1, bottom_margin-2, true);
+            ccanvas.fill_rect(end+1, bottom_margin-4, end+move, bottom_margin-2, false);
         } else {
-            canvas.fill_rect(start-move, bottom_margin-4, start-1, bottom_margin-2, false);
-            canvas.fill_rect(end-move+1, bottom_margin-4, end, bottom_margin-2, true);
+            ccanvas.fill_rect(start-move, bottom_margin-4, start-1, bottom_margin-2, false);
+            ccanvas.fill_rect(end-move+1, bottom_margin-4, end, bottom_margin-2, true);
         }
 
         if paused {
@@ -83,14 +95,14 @@ type game {
         }
     }
 
-    void update_block(canvas8 canvas, uint8 row, uint8 col) {
+    void update_block(uint8 row, uint8 col) {
         c = col * (block_size+1);
         r = start_y + row * (block_size+1);
         status = blocks[row][col];
-        canvas.fill_rect(c, r, c+block_size-1, r+block_size-1, status);
+        ccanvas.fill_rect(c, r, c+block_size-1, r+block_size-1, status);
     }
     
-    void draw_blocks(canvas8 canvas, display oled, mcu mmcu) {
+    void draw_blocks() {
         // update blocks according to the level
         if level > 1 {
             i = 0u;
@@ -111,27 +123,27 @@ type game {
                     v = !blocks[row][col];
                     blocks[row][col] = v;
                 }
-                update_block(canvas, row, col);
+                update_block(row, col);
                 if blocks[row][col] {
                     rem_blocks++;
                 }
                 col++;
             }
             row++;
-            mmcu.wait_ms(100); // animation effect
+            //mmcu.wait_ms(100); // animation effect
             oled.update_frame();
         }
-        oled.update_frame();
+        //oled.update_frame();
     }
     
-    void init_level(canvas8 canvas, display oled, mcu mmcu) {
-        start_y = canvas.height() - blocks.rows * block_sizesp;
+    void init_level() {
+        start_y = ccanvas.height() - blocks.rows * block_sizesp;
     
-        draw_blocks(canvas, oled, mmcu);
+        draw_blocks();
     
         // hide current bar
         start = bar_middle - bar_width/2;
-        canvas.fill_rect(start, bottom_margin-4, start + bar_width-1, bottom_margin-2, false);
+        ccanvas.fill_rect(start, bottom_margin-4, start + bar_width-1, bottom_margin-2, false);
         bar_width = 30 - level;
         if bar_width < 10 {
             bar_width = 10;
@@ -139,18 +151,18 @@ type game {
         // draw new bar
         bar_middle = uint8(right_margin/2);
         start = bar_middle - bar_width/2;
-        canvas.fill_rect(start, bottom_margin-4, start + bar_width-1, bottom_margin-2, true);
+        ccanvas.fill_rect(start, bottom_margin-4, start + bar_width-1, bottom_margin-2, true);
     
         // set ball initial pos
         ball_dir_x = 1;
         ball_dir_y = 1;
         ball_pos_x = bar_middle;
         ball_pos_y = bottom_margin;
-        canvas.fill_rect(ball_pos_x - 1, ball_pos_y - 1, ball_pos_x, ball_pos_y, true);
+        ccanvas.fill_rect(ball_pos_x - 1, ball_pos_y - 1, ball_pos_x, ball_pos_y, true);
     }
     
-    void move_ball(canvas8 canvas) {
-        canvas.fill_rect(ball_pos_x - 1, ball_pos_y - 1, ball_pos_x, ball_pos_y, false);
+    void move_ball() {
+        ccanvas.fill_rect(ball_pos_x - 1, ball_pos_y - 1, ball_pos_x, ball_pos_y, false);
     
         // ball_pos_{x,y} represents the top right pixel of the ball
     
@@ -172,7 +184,7 @@ type game {
 
                 blocks[brow][bcol] = false;
                 rem_blocks--;
-                update_block(canvas, brow, bcol);
+                update_block(brow, bcol);
 
                 hit_y = (ball_pos_y + 1 - start_y) % block_sizesp == 0;
                 hit_x = ball_pos_x % block_sizesp == 0;
@@ -190,7 +202,7 @@ type game {
             ball_dir_x *= -1;
         }
     
-        if ball_dir_y == 1 and ball_pos_y == canvas.height() - 1 {
+        if ball_dir_y == 1 and ball_pos_y == ccanvas.height() - 1 {
             // hit top
             ball_dir_y *= -1;
     
@@ -208,20 +220,20 @@ type game {
         ball_pos_y += ball_dir_y;
     
         if rem_blocks > 0 {
-            canvas.fill_rect(ball_pos_x - 1, ball_pos_y - 1, ball_pos_x, ball_pos_y, true);
+            ccanvas.fill_rect(ball_pos_x - 1, ball_pos_y - 1, ball_pos_x, ball_pos_y, true);
         }
     }
 
-    void check_level_done(canvas8 canvas, display oled, mcu mmcu) {
+    void check_level_done() {
         if rem_blocks == 0 {
             //set_level_debug();
             level = (level+1) % 30;
-            init_level(canvas, oled, mmcu);
+            init_level();
             //paused = true;
         }
     }
 
-    key_press implements interrupt_i8 {
+    /*key_press implements interrupt_i8 {
         void handler(uint8 key) {
             if gameover {
                 gameover = false;
@@ -235,6 +247,6 @@ type game {
             }
             paused = false;
         }
-    }
+    }*/
 
 }

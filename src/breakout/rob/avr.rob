@@ -5,6 +5,7 @@ use graphic.canvas8;
 
 bind avr5mcu to mmcu singleton;
 bind avr5mcu to ssd1306.mmcu singleton;
+bind avr5mcu to game.mmcu singleton;
 
 bind avr5mcu.uart0 to dbus_uart singleton;
 
@@ -15,5 +16,8 @@ bind avr5mcu.b2 to ssd1306.select singleton;
 bind avr5mcu.spi to dbus_display singleton;
 bind avr5mcu.spi to ssd1306.dbus singleton;
 
+bind canvas8 to game.ccanvas singleton;
+
 bind ssd1306 to oled singleton;
+bind ssd1306 to game.ddisplay singleton;
 bind ssd1306.framebuffer to canvas8.buffer singleton;

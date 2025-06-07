@@ -168,7 +168,6 @@ public:
         };
 
         write_commands(init_commands, sizeof(init_commands)/sizeof(uint8_t));
-        mmcu.wait_ms(10);
     }
 
     void set_orientation(displayorientation o) {
@@ -213,7 +212,6 @@ public:
             reset.set(false);
             mmcu.wait_ms(10);
             reset.set(true);
-            mmcu.wait_ms(10);
         }
     }
 

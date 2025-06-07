@@ -1,13 +1,16 @@
 
+#pragma once
+
 #include "../cppdeps.h"
-//#include "../di.hpp"
 #include "../intfs/mcu.hpp"
 #include "../intfs/ports.hpp"
 #include "../intfs/databus.hpp"
 #include "avr5_regs.hpp"
 
-extern "C" __attribute((naked)) void __delay_us();
-extern "C" void busy_wait_loop5(uint16_t count);
+extern "C" {
+    __attribute((naked)) void __delay_us();
+    void busy_wait_loop5(uint16_t count);
+}
 
 template<uintptr_t ddr_addr, uintptr_t port_addr, uint8_t field>
 class avr5mcu_port : public digitalport {
@@ -33,28 +36,22 @@ public:
     }
 };
 
-const auto avr5_mosi = []{};
-const auto avr5_miso = []{};
-const auto avr5_sck = []{};
-
 class avr5_spi : public databus {
     digitalport& mosi;
     digitalport& miso;
     digitalport& sck;
-    digitalport &ss;
+    digitalport& ss;
 public:
     avr5_spi(digitalport& mosi, digitalport& miso, digitalport& sck, digitalport &ss) : 
-        mosi(mosi), miso(miso), sck(sck), ss(ss) {}
+        mosi(mosi), miso(miso), sck(sck), ss(ss) {
+    }
 
-    /* setup hardware SPI at:
-       b3 = MOSI
-       b4 = MISO
-       b5 = SCK */
+    /* setup hardware SPI */
     void setup(uint32_t speed) override {
         mosi.mode(port_mode::output);
         miso.mode(port_mode::input);
         sck.mode(port_mode::output);
-        
+
         // SS must be high when setting master mode
         ss.mode(port_mode::output);
         ss.set(true);
@@ -116,6 +113,10 @@ class avr5_uart0 : public databus {
     mcu& mmcu;
 public:
     avr5_uart0(mcu& mmcu) : mmcu(mmcu) {
+        // send ^ to start measuring time in experiments
+        setup(115200);
+        enable();
+        write('^');
     }
 
     void setup(uint32_t baud) override {

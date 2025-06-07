@@ -22,16 +22,14 @@ public:
 
     BOOST_DI_INJECT(app,
         mcu& mmcu, 
-        display& oled,
         (named = named_dbus_uart) databus& dbus_uart, 
-        (named = named_dbus_display) databus& dbus_display) : 
+        (named = named_dbus_display) databus& dbus_display,
+        display& oled) : 
         mmcu(mmcu), oled(oled), 
         dbus_uart(dbus_uart), dbus_display(dbus_display) {}
 
     void setup_hardware() {
-        // dbus_serial setup
-        dbus_uart.setup(115200);
-        dbus_uart.enable();
+        // dbus_serial setup (enabled at dbus_uart creation)
         const char *msg1 = "Robcmp Breakout Game for SSD1306 肖\n";
         const char *msg2 = "Use left/right arrows to move and space to pause.\n";
         dbus_uart.write_array((char*)msg1, strlen(msg1));
@@ -62,30 +60,15 @@ int main() {
     auto &mmcu = mapp.mmcu;
     auto &oled = mapp.oled;
 
-    game gm;
+    game gm(canvas, oled, mmcu);
     //k = gm.key_press;
     //dbus_uart.async_read_to(k);
 
-    dbus_uart.write('^');
-    uint8_t updates = 0;
-
     while (true) {
-        gm.move_bar(canvas);
-
-        if (!gm.paused && !gm.gameover) {
-            //mmcu.wait_ms(20);
-            gm.move_ball(canvas);
-        }
-
-        gm.check_level_done(canvas, oled, mmcu);
+        gm.process_game();
         oled.update_frame();
 
-        updates++;
-        if (updates == 0) {
-            dbus_uart.write('-');
-        }
-
-        if (gm.bar_width == 10) {
+        if (gm.get_bar_width() == 10) {
             dbus_uart.write('$');
             return 0;
         }

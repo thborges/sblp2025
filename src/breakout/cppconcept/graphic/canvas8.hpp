@@ -7,38 +7,37 @@
 #include "../cppdeps.h"
 #include "../intfs/buffer8.hpp"
 
-template<buffer8 bufferimpl>
+template<buffer8 buffer8>
 class canvas8 {
-    bufferimpl *buffer;
+    buffer8& buffer;
 public:
-    canvas8(bufferimpl *b) {
-        buffer = b;
+    canvas8(buffer8& buf) : buffer(buf) {
     }
     
     uint16_t width() {
-        return buffer->width();
+        return buffer.width();
     }
 
     uint16_t height() {
-        return buffer->height()*8;
+        return buffer.height()*8;
     }
 
     void clear() {
-        buffer->clear();
+        buffer.clear();
     }
 
     void set_pixel(uint16_t row, uint16_t col) {
         auto rowb = row/8;
-        assert(col < buffer->width() && rowb < buffer->height() && "outside buffer bounds");
-        auto v = buffer->get(rowb, col);
-        buffer->set(rowb, col, v | (1 << uint8_t(row & 7)));
+        assert(col < buffer.width() && rowb < buffer.height() && "outside buffer bounds");
+        auto v = buffer.get(rowb, col);
+        buffer.set(rowb, col, v | (1 << uint8_t(row & 7)));
     }
 
     void clear_pixel(uint16_t row, uint16_t col) {
         auto rowb = row/8;
-        assert(col < buffer->width() && rowb < buffer->height() && "outside buffer bounds");
-        auto v = buffer->get(rowb, col);
-        buffer->set(rowb, col, v & ~(1 << uint8_t(row & 7)));
+        assert(col < buffer.width() && rowb < buffer.height() && "outside buffer bounds");
+        auto v = buffer.get(rowb, col);
+        buffer.set(rowb, col, v & ~(1 << uint8_t(row & 7)));
     }
 
     void fill_rect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, bool v) {
@@ -62,12 +61,12 @@ public:
             }
             auto b = x1;
             while (b <= x2) {
-                auto bv = buffer->get(bank, b);
+                auto bv = buffer.get(bank, b);
                 bv &= ~mask;
                 if (v) {
                     bv |= mask;
                 }
-                buffer->set(bank, b, bv);
+                buffer.set(bank, b, bv);
                 b++;
             }
             bank++;

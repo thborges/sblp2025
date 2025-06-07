@@ -1,6 +1,6 @@
 OPTS=-Oz -std=c++23 -nostdlibinc -nostdlib -mmcu=atmega328p -DF_CPU=16000000 -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections
 #OPTS+=--save-temps
-#OPTS+=-ggdb -O0
+#OPTS+=-gdwarf-4 -O1
 
 AVRDUDECFG=-C ~/.platformio/packages/tool-avrdude@1.60300.200527/avrdude.conf
 AVRDUDEPORT=`ls /dev/cu.usb*`

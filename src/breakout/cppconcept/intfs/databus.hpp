@@ -10,9 +10,6 @@
 enum class databus_protocol {SPI, I2C, UART, CAN};
 
 template<typename T>
-T&& declval() noexcept;
-
-template<typename T>
 concept databus = requires(T obj, uint32_t speed, uint8_t u8, uint16_t u16, char data[], void *isr) {
     { obj.setup(speed) } -> same_as<void>;
     { obj.enable() } -> same_as<void>;

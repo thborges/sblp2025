@@ -8,13 +8,13 @@
 #include "../intfs/display.hpp"
 #include "../graphic/envelope.hpp"
 
-class framebuffer {
+class ssd1306_framebuffer {
 protected:
     envelope_u16 changes;
     uint8_t buff[8][128];
 
 public:
-    framebuffer() {
+    ssd1306_framebuffer() {
         clear();
     }
 
@@ -53,32 +53,27 @@ public:
     }
 };
 
-template<databus db, digitalport digitalport, mcu mcu>
+template<databus db, digitalport dp_datacmd, digitalport dp_reset, digitalport dp_select, mcu mcu, buffer8 buffer8>
 class ssd1306 {
 public:
-    mcu *mmcu = nullptr;
+    mcu& mmcu;
+    buffer8& framebuffer;
 
     // ports used by the SPI display
-    digitalport *datacmd = nullptr;
-    digitalport *reset = nullptr;
-    digitalport *select = nullptr;
+    dp_datacmd& datacmd;
+    dp_reset& reset;
+    dp_select& select;
 
     // SPI or I2C bus
-    db *dbus = nullptr;
+    db& dbus;
 
     // display address for I2C
     uint8_t address = 0;
 
 public:
-    class framebuffer framebuffer;
 
-    ssd1306(mcu *mmcu, digitalport *datacmd, digitalport *reset, digitalport *select,
-        db *dbus) {
-        this->mmcu = mmcu;
-        this->datacmd = datacmd;
-        this->reset = reset;
-        this->select = select;
-        this->dbus = dbus;
+    ssd1306(mcu& mmcu, dp_datacmd& datacmd, dp_reset& reset, dp_select& select,
+        db& dbus, buffer8& framebuffer) : mmcu(mmcu), datacmd(datacmd), reset(reset), select(select), dbus(dbus), framebuffer(framebuffer) {
     }
 
     enum class commands : uint8_t {
@@ -130,9 +125,9 @@ public:
     }
 
     void init_display() {
-        datacmd->mode(port_mode::output);
-        reset->mode(port_mode::output);
-        select->mode(port_mode::output);
+        datacmd.mode(port_mode::output);
+        reset.mode(port_mode::output);
+        select.mode(port_mode::output);
 
         reset_display();
 
@@ -157,7 +152,7 @@ public:
             commands::ON
         };
 
-        write_commands(init_commands, sizeof(init_commands)/sizeof(uint8_t));
+        write_commands(init_commands, sizeof(init_commands)/sizeof(commands));
     }
 
     void set_orientation(displayorientation o) {
@@ -196,28 +191,28 @@ public:
     }
 
     void reset_display() {
-        if (dbus->get_protocol() == databus_protocol::SPI) {
-            reset->set(true);
-            mmcu->wait_ms(10);
-            reset->set(false);
-            mmcu->wait_ms(10);
-            reset->set(true);
+        if (dbus.get_protocol() == databus_protocol::SPI) {
+            reset.set(true);
+            mmcu.wait_ms(10);
+            reset.set(false);
+            mmcu.wait_ms(10);
+            reset.set(true);
         }
     }
 
     void write_commands(commands cmds[], uint8_t cmds_size) {
-        datacmd->set(false);
-        select->set(false);
+        datacmd.set(false);
+        select.set(false);
 
-        dbus->start_transaction(address);
-        if (dbus->get_protocol() == databus_protocol::I2C) {
-            //dbus->write(i2c_control::CMD_STREAM);
+        dbus.start_transaction(address);
+        if (dbus.get_protocol() == databus_protocol::I2C) {
+            //dbus.write(i2c_control::CMD_STREAM);
         }
 
-        dbus->write_array((char*)cmds, cmds_size);
+        dbus.write_array((char*)cmds, cmds_size);
 
-        dbus->end_transaction();
-        select->set(true);
+        dbus.end_transaction();
+        select.set(true);
     }
 
     void reset_cursor(uint16_t lx, uint16_t ly, uint16_t ux, uint16_t uy) {
@@ -242,10 +237,10 @@ public:
         }
         reset_cursor(ev.lx, ev.ly, ev.ux, ev.uy);
 
-        datacmd->set(true);
-        select->set(false);
-        dbus->start_transaction(address);
-        if (dbus->get_protocol() == databus_protocol::I2C) {
+        datacmd.set(true);
+        select.set(false);
+        dbus.start_transaction(address);
+        if (dbus.get_protocol() == databus_protocol::I2C) {
             //dbus.write(i2c_control.DATA_STREAM);
         }
 
@@ -254,14 +249,14 @@ public:
 			auto col = ev.lx;
 			while (col <= ev.ux) { 
                 auto v = framebuffer.get(row, col);
-				dbus->write(v);
+				dbus.write(v);
 				col++;
 			}
 			row++;
 		}
         
-        dbus->end_transaction();
-        select->set(true);
+        dbus.end_transaction();
+        select.set(true);
         framebuffer.reset_changes();
     }
 };

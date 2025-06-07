@@ -121,6 +121,10 @@ class avr5_uart0 : public databus {
     mcu& mmcu;
 public:
     avr5_uart0(mcu& mmcu) : mmcu(mmcu) {
+        // send ^ to start measuring time in experiments
+        setup(115200);
+        enable();
+        write('^');
     }
 
     void setup(uint32_t baud) override {
