@@ -1,8 +1,6 @@
 
 #pragma once
 
-#include "../cppdeps.h"
-#include "../di.hpp"
 #include "../intfs/mcu.hpp"
 #include "../intfs/ports.hpp"
 #include "../intfs/databus.hpp"
@@ -10,12 +8,7 @@
 #include "../intfs/display.hpp"
 #include "../graphic/envelope.hpp"
 
-const auto dp_datacmd = [] {};
-const auto dp_reset = [] {};
-const auto dp_select = [] {};
-const auto nm_dbus_display = [] {};
-
-class ssd1306_framebuffer : public buffer8 {
+class ssd1306_framebuffer {
 protected:
     envelope_u16 changes;
     uint8_t buff[8][128];
@@ -25,10 +18,10 @@ public:
         clear();
     }
 
-    uint16_t height() override { return 8; }
-    uint16_t width() override { return 128; }
+    uint16_t height() { return 8; }
+    uint16_t width() { return 128; }
     
-    void clear() override {
+    void clear() {
         uint8_t row = 0u;
         while (row < height()) {
             uint8_t col = 0u;
@@ -42,54 +35,54 @@ public:
         changes.expand(width()-1, height()-1);
     }
 
-    void reset_changes() override {
+    void reset_changes() {
         changes.clear();
     }
 
-    envelope_u16 get_changes() override {
+    envelope_u16 get_changes() {
         return changes;
     }
 
-    uint8_t get(uint16_t row, uint16_t col) override {
+    uint8_t get(uint16_t row, uint16_t col) {
         return buff[row][col];
     }
     
-    void set(uint16_t row, uint16_t col, uint8_t v) override {
+    void set(uint16_t row, uint16_t col, uint8_t v) {
         buff[row][col] = v;
         changes.expand(col, row);
     }
 };
 
-class ssd1306 : public display {
+template<
+    databus db_impl = c_databus,
+    digitalport dp_datacmd = c_digitalport,
+    digitalport dp_reset = c_digitalport,
+    digitalport dp_select = c_digitalport,
+    mcu mcu_impl = c_mcu,
+    buffer8 buffer8_impl = c_buffer8>
+class ssd1306 {
 public:
-    mcu& mmcu;
-    buffer8& framebuffer;
+    mcu_impl& mmcu;
+    buffer8_impl& framebuffer;
 
     // ports used by the SPI display
-    digitalport& datacmd;
-    digitalport& reset;
-    digitalport& select;
+    dp_datacmd& datacmd;
+    dp_reset& reset;
+    dp_select& select;
 
     // SPI or I2C bus
-    databus& dbus;
+    db_impl& dbus;
 
     // display address for I2C
     uint8_t address = 0;
 
 public:
-    BOOST_DI_INJECT(ssd1306, 
-        mcu& mmcu, 
-        (named = dp_datacmd) digitalport& datacmd, 
-        (named = dp_reset) digitalport& reset, 
-        (named = dp_select) digitalport& select,
-        (named = nm_dbus_display) databus& dbus,
-        buffer8& framebuffer) :
-        mmcu(mmcu),
-        datacmd(datacmd),
-        reset(reset),
-        select(select),
-        dbus(dbus),
-        framebuffer(framebuffer) { }
+
+    ssd1306(mcu_impl& mmcu, dp_datacmd& datacmd, dp_reset& reset, dp_select& select,
+        db_impl& dbus, buffer8_impl& framebuffer) : 
+        mmcu(mmcu), datacmd(datacmd), reset(reset), select(select), 
+        dbus(dbus), framebuffer(framebuffer) {
+    }
 
     enum class commands : uint8_t {
         // powerstate
@@ -167,7 +160,7 @@ public:
             commands::ON
         };
 
-        write_commands(init_commands, sizeof(init_commands)/sizeof(uint8_t));
+        write_commands(init_commands, sizeof(init_commands)/sizeof(commands));
     }
 
     void set_orientation(displayorientation o) {

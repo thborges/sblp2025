@@ -2,29 +2,29 @@
  * Robcmp examples: Breakout game on a SSD1306 display
  */
 
-#include "cppdeps.h"
 #include "intfs/ports.hpp"
 #include "intfs/mcu.hpp"
 #include "intfs/display.hpp"
 #include "intfs/databus.hpp"
-
 #include "mcu/avr5_hardware.hpp"
 //#include "other_hardware.hpp"
 
 #include "game.hpp"
 
+template<
+    mcu mcu_impl = c_mcu,
+    display display_impl = c_display,
+    databus dbus_uart_impl = c_databus_uart0,
+    databus dbus_display_impl = c_databus_display>
 class app {
 public:
-    mcu& mmcu; 
-    display& oled;
-    databus& dbus_uart;
-    databus& dbus_display;
+    mcu_impl& mmcu; 
+    display_impl& oled;
+    dbus_uart_impl& dbus_uart;
+    dbus_display_impl& dbus_display;
 
-    BOOST_DI_INJECT(app,
-        mcu& mmcu, 
-        (named = nm_dbus_uart) databus& dbus_uart, 
-        (named = nm_dbus_display) databus& dbus_display,
-        display& oled) : 
+    app(mcu_impl& mmcu, dbus_uart_impl& dbus_uart, dbus_display_impl& dbus_display,
+        display_impl& oled) : 
         mmcu(mmcu), oled(oled), 
         dbus_uart(dbus_uart), dbus_display(dbus_display) {}
 
@@ -50,26 +50,21 @@ public:
 };
 
 int main() {
-
     auto mapp = breakout_injector.create<app>();
     mapp.setup_hardware();
 
     auto canvas = breakout_injector.create<canvas8>();
-    
-    auto &dbus_uart = mapp.dbus_uart;
-    auto &mmcu = mapp.mmcu;
-    auto &oled = mapp.oled;
 
-    game gm(canvas, oled, mmcu);
+    game gm(canvas, mapp.oled, mapp.mmcu);
     //k = gm.key_press;
     //dbus_uart.async_read_to(k);
 
     while (true) {
         gm.process_game();
-        oled.update_frame();
+        mapp.oled.update_frame();
 
         if (gm.get_bar_width() == 10) {
-            dbus_uart.write('$');
+            mapp.dbus_uart.write('$');
             return 0;
         }
     }

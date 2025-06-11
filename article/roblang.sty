@@ -1,0 +1,46 @@
+
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{roblang}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.97,0.97,0.97}
+\definecolor{codeyellow}{rgb}{0.72,0.5,0.19}
+%184,128,49}
+
+\lstdefinestyle{rob}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    keywordstyle=[2]\color{codeyellow},
+    keywordstyle=[3]\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\setlength{\lineskip}{0pt}\fontsize{8}{9}\selectfont\ttfamily,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=t,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=3pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    lineskip=-1pt,
+    %mathescape=true,
+}
+\lstset{style=rob}
+
+\lstdefinelanguage{rob}{
+    %alsodigit = {-},
+    keywords = {while,loop,if,else,delay,print,return,register,at,volatile,const,asm,type,interface,implements,use,copy,bind,to,singleton,transient,naked,weak,section,inline,noinline,enum},
+    morekeywords=[2]{void,char,int8,int16,int32,int64,uint8,uint16,uint32,uint64,long,float,double,bool},
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    string=[b]",
+}
+
+
