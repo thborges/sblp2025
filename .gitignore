@@ -6,5 +6,12 @@
 *.hex
 *.ii
 *.swp
+*.asm
+*.bbx
+*.cbx
+*.dbx
+*.cls
+*.dtx
+*.ins
 log.txt
 .vscode

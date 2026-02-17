@@ -1,0 +1,23 @@
+
+use mcu.stm32f1;
+use graphic.ssd1306;
+use graphic.canvas8;
+
+bind stm32f1 to mmcu singleton;
+bind stm32f1 to ssd1306.mmcu singleton;
+bind stm32f1 to game.mmcu singleton;
+
+bind stm32f1.uart2 to dbus_uart singleton;
+
+// SPI display
+bind stm32f1.b6 to ssd1306.reset singleton;
+bind stm32f1.b7 to ssd1306.datacmd singleton;
+bind stm32f1.b8 to ssd1306.select singleton;
+bind stm32f1.spi1 to dbus_display singleton;
+bind stm32f1.spi1 to ssd1306.dbus singleton;
+
+bind canvas8 to game.ccanvas singleton;
+
+bind ssd1306 to oled singleton;
+bind ssd1306 to game.ddisplay singleton;
+bind ssd1306.framebuffer to canvas8.buffer singleton;

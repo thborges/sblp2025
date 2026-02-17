@@ -1,0 +1,39 @@
+OPENOCD=/Users/thborges/.platformio/packages/tool-openocd
+USBPORT=`ls /dev/cu.usb*`
+
+all:
+	robcmp -a stm32f1 -o out/stm32f1init.o -Oz -I . mcu/stm32f1init.rob
+	robcmp -a stm32f1 -o out/main.o -Oz -I . main.rob -s stm32.rob -bdep
+	ld.lld -nostdlib -Bstatic --gc-sections --lto=thin --lto-whole-program-visibility -L../../common -Tstm32f1.ld -o main.elf out/*.o ../../common/arm-eabi-libgcc.a ../../common/cortex-m3-arm-missing.o
+	arm-none-eabi-size main.elf
+	arm-none-eabi-objdump --no-addresses -D main.elf | python3 ../../common/sorts.py > main.S
+
+%.ll : %.rob FORCE
+	robcmp -a atmega328p -Oz -I . -s stm32.rob -bdep $< > $@
+
+%.up: %.elf
+	${OPENOCD}/bin/openocd -f ${OPENOCD}/scripts/interface/stlink.cfg -f ${OPENOCD}/scripts/target/stm32f1x.cfg -c "program $< reset exit"
+
+size: main.elf
+	arm-none-eabi-readelf -WC -s main.elf|sed -E "s/ +/\t/g"
+
+passes:
+	robcmp -a atmega328p -Oz -I . main.rob -s avr.rob -bdep > main.ll
+	opt -Oz -stats -disable-output main.ll
+
+calldepth: clean
+	robcmp -a atmega328p -Oz -I . main.rob -s avr.rob -bdep > out/main.ll
+	opt -passes='internalize,globaldce' -internalize-public-api-list=main -S out/main.ll -o out/cleaned.ll
+	opt -passes=dot-callgraph out/cleaned.ll -disable-output
+	python3.14 ../../common/calldepth.py out/*.dot
+
+
+test:
+	/usr/bin/time robcmp-simavr-debug -f main.elf -c 16000000 -m atmega328p -hw ssd1306 &> log.txt
+	@tail -n 1 log.txt
+	@fgrep -o - log.txt | wc -l
+
+clean:
+	rm -f *.s *.ii *.o out/*.o *.elf
+
+FORCE: ;

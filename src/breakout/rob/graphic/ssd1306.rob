@@ -28,10 +28,14 @@ type ssd1306 implements display {
     framebuffer implements buffer8 {
         changes = envelope_u16();
         buff = {{0u:128}:8};
-        
+
         uint16 height() inline { return buff.rows; }
         uint16 width() inline { return buff.cols; }
         
+        void clear_changes() inline {
+            changes.clear();
+        }
+
         void clear() {
             row = 0u;
             while row < buff.rows {
@@ -42,6 +46,8 @@ type ssd1306 implements display {
                 }
                 row++;
             }
+            changes.expand(0, 0);
+            changes.expand(buff.cols-1, buff.rows-1);
         }
 
         uint8 get(uint16 row, uint16 col) inline {
@@ -214,6 +220,7 @@ type ssd1306 implements display {
         if ev.empty() {
             return;
         }
+
         reset_cursor(ev.lx, ev.ly, ev.ux, ev.uy);
 
         datacmd.set(true);
@@ -236,6 +243,6 @@ type ssd1306 implements display {
         
         dbus.end_transaction();
         select.set(true);
-        ev.clear();
+        framebuffer.clear_changes();
     }
 }

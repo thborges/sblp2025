@@ -1,0 +1,539 @@
+
+use intfs.mcu;
+use intfs.ports;
+use intfs.databus;
+
+use stm32f1regs;
+
+type stm32f1 implements mcu {
+	
+	uint32 clock() inline {
+		// TODO: provide 25Mhz and 72Mhz selection
+		return 8E6;
+	}
+
+	void set_interruptions(bool enabled) {
+        return;
+	}
+
+	a2 implements digitalport {
+		void mode_input(PIN_MODE mode, INPUT_MODE cnf) inline {
+			GPIOA_CRL.mode2 = mode;
+			GPIOA_CRL.cnf2 = cnf;
+		}
+		void mode_output(PIN_MODE mode, OUTPUT_MODE cnf) inline {
+			GPIOA_CRL.mode2 = mode;
+			GPIOA_CRL.cnf2 = cnf;
+		}
+		void mode(port_mode m)  {
+            APB2EN.iopa = true;
+            if (m == port_mode.input) {
+				mode_input(PIN_MODE.INPUT, INPUT_MODE.PULLUPDOWN);
+            } else {
+				mode_output(PIN_MODE.OUTPUT50MHz, OUTPUT_MODE.PUSHPULL);
+            }
+        }
+		void set(bool v) inline { GPIOA_ODR.odr2 = v; }
+		bool get()       inline { return GPIOA_IDR.idr2; }
+	}
+
+	a3 implements digitalport {
+		void mode_input(PIN_MODE mode, INPUT_MODE cnf) inline {
+			GPIOA_CRL.mode3 = mode;
+			GPIOA_CRL.cnf3 = cnf;
+		}
+		void mode_output(PIN_MODE mode, OUTPUT_MODE cnf) inline {
+			GPIOA_CRL.mode3 = mode;
+			GPIOA_CRL.cnf3 = cnf;
+		}
+		void mode(port_mode m)  {
+            APB2EN.iopa = true;
+            if (m == port_mode.input) {
+				mode_input(PIN_MODE.INPUT, INPUT_MODE.PULLUPDOWN);
+            } else {
+				mode_output(PIN_MODE.OUTPUT50MHz, OUTPUT_MODE.PUSHPULL);
+            }
+        }
+		void set(bool v) inline { GPIOA_ODR.odr3 = v; }
+		bool get()       inline { return GPIOA_IDR.idr3; }
+	}
+	
+	a4 implements digitalport {
+		void mode_input(PIN_MODE mode, INPUT_MODE cnf) inline {
+			GPIOA_CRL.mode4 = mode;
+			GPIOA_CRL.cnf4 = cnf;
+		}
+		void mode_output(PIN_MODE mode, OUTPUT_MODE cnf) inline {
+			GPIOA_CRL.mode4 = mode;
+			GPIOA_CRL.cnf4 = cnf;
+		}
+		void mode(port_mode m)  {
+            APB2EN.iopa = true;
+            if (m == port_mode.input) {
+				mode_input(PIN_MODE.INPUT, INPUT_MODE.PULLUPDOWN);
+            } else {
+				mode_output(PIN_MODE.OUTPUT50MHz, OUTPUT_MODE.PUSHPULL);
+            }
+        }
+		void set(bool v) inline { GPIOA_ODR.odr4 = v; }
+		bool get()       inline { return GPIOA_IDR.idr4; }
+	}
+
+	a5 implements digitalport {
+		void mode_input(PIN_MODE mode, INPUT_MODE cnf) inline {
+			GPIOA_CRL.mode5 = mode;
+			GPIOA_CRL.cnf5 = cnf;
+		}
+		void mode_output(PIN_MODE mode, OUTPUT_MODE cnf) inline {
+			GPIOA_CRL.mode5 = mode;
+			GPIOA_CRL.cnf5 = cnf;
+		}
+		void mode(port_mode m)  {
+            APB2EN.iopa = true;
+            if (m == port_mode.input) {
+				mode_input(PIN_MODE.INPUT, INPUT_MODE.PULLUPDOWN);
+            } else {
+				mode_output(PIN_MODE.OUTPUT50MHz, OUTPUT_MODE.PUSHPULL);
+            }
+        }
+		void set(bool v) inline { GPIOA_ODR.odr5 = v; }
+		bool get()       inline { return GPIOA_IDR.idr5; }
+	}
+
+	a6 implements digitalport {
+		void mode_input(PIN_MODE mode, INPUT_MODE cnf) inline {
+			GPIOA_CRL.mode6 = mode;
+			GPIOA_CRL.cnf6 = cnf;
+		}
+		void mode_output(PIN_MODE mode, OUTPUT_MODE cnf) inline {
+			GPIOA_CRL.mode6 = mode;
+			GPIOA_CRL.cnf6 = cnf;
+		}
+		void mode(port_mode m)  {
+            APB2EN.iopa = true;
+            if (m == port_mode.input) {
+				mode_input(PIN_MODE.INPUT, INPUT_MODE.PULLUPDOWN);
+            } else {
+				mode_output(PIN_MODE.OUTPUT50MHz, OUTPUT_MODE.PUSHPULL);
+            }
+        }
+		void set(bool v) inline { GPIOA_ODR.odr6 = v; }
+		bool get()       inline { return GPIOA_IDR.idr6; }
+	}
+
+	a7 implements digitalport {
+		void mode_input(PIN_MODE mode, INPUT_MODE cnf) inline {
+			GPIOA_CRL.mode7 = mode;
+			GPIOA_CRL.cnf7 = cnf;
+		}
+		void mode_output(PIN_MODE mode, OUTPUT_MODE cnf) inline {
+			GPIOA_CRL.mode7 = mode;
+			GPIOA_CRL.cnf7 = cnf;
+		}
+		void mode(port_mode m)  {
+            APB2EN.iopa = true;
+            if (m == port_mode.input) {
+				mode_input(PIN_MODE.INPUT, INPUT_MODE.PULLUPDOWN);
+            } else {
+				mode_output(PIN_MODE.OUTPUT50MHz, OUTPUT_MODE.PUSHPULL);
+            }
+        }
+		void set(bool v) inline { GPIOA_ODR.odr7 = v; }
+		bool get()       inline { return GPIOA_IDR.idr7; }
+	}
+
+	c13 implements digitalport {
+		void mode(port_mode m)  {
+            APB2EN.iopc = true;
+            if (m == port_mode.input) {
+                GPIOC_CRH.mode13 = PIN_MODE.INPUT;
+                GPIOC_CRH.cnf13 = INPUT_MODE.PULLUPDOWN;
+            } else {
+                GPIOC_CRH.mode13 = PIN_MODE.OUTPUT50MHz;
+                GPIOC_CRH.cnf13 = OUTPUT_MODE.PUSHPULL;
+            }
+        }
+		void set(bool v) inline { GPIOC_ODR.odr13 = v; }
+		bool get()       inline { return GPIOC_IDR.idr13; }
+	}
+
+	b3 implements digitalport {
+		void mode_input(PIN_MODE mode, INPUT_MODE cnf) {
+			GPIOB_CRL.mode3 = mode;
+			GPIOB_CRL.cnf3 = cnf;
+		}
+		void mode_output(PIN_MODE mode, OUTPUT_MODE cnf) {
+			GPIOB_CRL.mode3 = mode;
+			GPIOB_CRL.cnf3 = cnf;
+		}
+		void mode(port_mode m)  {
+            APB2EN.iopb = true;
+            if (m == port_mode.input) {
+				mode_input(PIN_MODE.INPUT, INPUT_MODE.PULLUPDOWN);
+            } else {
+				mode_output(PIN_MODE.OUTPUT50MHz, OUTPUT_MODE.PUSHPULL);
+            }
+        }
+		void set(bool v) inline { GPIOB_ODR.odr3 = v; }
+		bool get()       inline { return GPIOB_IDR.idr3; }
+	}
+
+	b4 implements digitalport {
+		void mode_input(PIN_MODE mode, INPUT_MODE cnf) {
+			GPIOB_CRL.mode4 = mode;
+			GPIOB_CRL.cnf4 = cnf;
+		}
+		void mode_output(PIN_MODE mode, OUTPUT_MODE cnf) {
+			GPIOB_CRL.mode4 = mode;
+			GPIOB_CRL.cnf4 = cnf;
+		}
+		void mode(port_mode m)  {
+            APB2EN.iopb = true;
+            if (m == port_mode.input) {
+				mode_input(PIN_MODE.INPUT, INPUT_MODE.PULLUPDOWN);
+            } else {
+				mode_output(PIN_MODE.OUTPUT50MHz, OUTPUT_MODE.PUSHPULL);
+            }
+        }
+		void set(bool v) inline { GPIOB_ODR.odr4 = v; }
+		bool get()       inline { return GPIOB_IDR.idr4; }
+	}
+
+	b5 implements digitalport {
+		void mode_input(PIN_MODE mode, INPUT_MODE cnf) {
+			GPIOB_CRL.mode5 = mode;
+			GPIOB_CRL.cnf5 = cnf;
+		}
+		void mode_output(PIN_MODE mode, OUTPUT_MODE cnf) {
+			GPIOB_CRL.mode5 = mode;
+			GPIOB_CRL.cnf5 = cnf;
+		}
+		void mode(port_mode m)  {
+            APB2EN.iopb = true;
+            if (m == port_mode.input) {
+				mode_input(PIN_MODE.INPUT, INPUT_MODE.PULLUPDOWN);
+            } else {
+				mode_output(PIN_MODE.OUTPUT50MHz, OUTPUT_MODE.PUSHPULL);
+            }
+        }
+		void set(bool v) inline { GPIOB_ODR.odr5 = v; }
+		bool get()       inline { return GPIOB_IDR.idr5; }
+	}
+
+	b6 implements digitalport {
+		void mode_input(PIN_MODE mode, INPUT_MODE cnf) {
+			GPIOB_CRL.mode6 = mode;
+			GPIOB_CRL.cnf6 = cnf;
+		}
+		void mode_output(PIN_MODE mode, OUTPUT_MODE cnf) {
+			GPIOB_CRL.mode6 = mode;
+			GPIOB_CRL.cnf6 = cnf;
+		}
+		void mode(port_mode m)  {
+            APB2EN.iopb = true;
+            if (m == port_mode.input) {
+				mode_input(PIN_MODE.INPUT, INPUT_MODE.PULLUPDOWN);
+            } else {
+				mode_output(PIN_MODE.OUTPUT50MHz, OUTPUT_MODE.PUSHPULL);
+            }
+        }
+		void set(bool v) inline { GPIOB_ODR.odr6 = v; }
+		bool get()       inline { return GPIOB_IDR.idr6; }
+	}
+
+	b7 implements digitalport {
+		void mode_input(PIN_MODE mode, INPUT_MODE cnf) {
+			GPIOB_CRL.mode7 = mode;
+			GPIOB_CRL.cnf7 = cnf;
+		}
+		void mode_output(PIN_MODE mode, OUTPUT_MODE cnf) {
+			GPIOB_CRL.mode7 = mode;
+			GPIOB_CRL.cnf7 = cnf;
+		}
+		void mode(port_mode m)  {
+            APB2EN.iopb = true;
+            if (m == port_mode.input) {
+				mode_input(PIN_MODE.INPUT, INPUT_MODE.PULLUPDOWN);
+            } else {
+				mode_output(PIN_MODE.OUTPUT50MHz, OUTPUT_MODE.PUSHPULL);
+            }
+        }
+		void set(bool v) inline { GPIOB_ODR.odr7 = v; }
+		bool get()       inline { return GPIOB_IDR.idr7; }
+	}
+
+	b8 implements digitalport {
+		void mode_input(PIN_MODE mode, INPUT_MODE cnf) {
+			GPIOB_CRH.mode8 = mode;
+			GPIOB_CRH.cnf8 = cnf;
+		}
+		void mode_output(PIN_MODE mode, OUTPUT_MODE cnf) {
+			GPIOB_CRH.mode8 = mode;
+			GPIOB_CRH.cnf8 = cnf;
+		}
+		void mode(port_mode m)  {
+            APB2EN.iopb = true;
+            if (m == port_mode.input) {
+				mode_input(PIN_MODE.INPUT, INPUT_MODE.PULLUPDOWN);
+            } else {
+				mode_output(PIN_MODE.OUTPUT50MHz, OUTPUT_MODE.PUSHPULL);
+            }
+        }
+		void set(bool v) inline { GPIOB_ODR.odr8 = v; }
+		bool get()       inline { return GPIOB_IDR.idr8; }
+	}
+
+	b9 implements digitalport {
+		void mode_input(PIN_MODE mode, INPUT_MODE cnf) {
+			GPIOB_CRH.mode9 = mode;
+			GPIOB_CRH.cnf9 = cnf;
+		}
+		void mode_output(PIN_MODE mode, OUTPUT_MODE cnf) {
+			GPIOB_CRH.mode9 = mode;
+			GPIOB_CRH.cnf9 = cnf;
+		}
+		void mode(port_mode m)  {
+            APB2EN.iopb = true;
+            if (m == port_mode.input) {
+				mode_input(PIN_MODE.INPUT, INPUT_MODE.PULLUPDOWN);
+            } else {
+				mode_output(PIN_MODE.OUTPUT50MHz, OUTPUT_MODE.PUSHPULL);
+            }
+        }
+		void set(bool v) inline { GPIOB_ODR.odr9 = v; }
+		bool get()       inline { return GPIOB_IDR.idr9; }
+	}
+
+    void wait_us(uint16 us) {
+		ticks = clock()/1E6 * us;
+    	start_tick = SYSTICK_VAL;
+    	while start_tick - SYSTICK_VAL < ticks;
+	}
+
+	void wait_ms(uint16 ms) {
+		while ms > 0 {
+			wait_us(1000);
+			ms--;
+		}
+	}
+
+	uint32 micros() {
+		return SYSTICK_VAL / (clock()/1E6);
+	}
+
+	uint32 millis() {
+		return micros() / 1000;
+	}
+
+	spi1 implements databus {
+		/* setup hardware SPI at:
+		   a7 = MOSI1
+		   a6 = MISO1
+		   a5 = SCK1 */
+		void setup(uint32 speed) {
+			//APB2EN.afio = true; // enable alternate function I/O clock
+			APB2EN.spi1 = true; // enable SPI1
+
+			SPI1_CR1.SPE = false; // disable SPI first
+			SPI1_CR1.CPHA = true;
+			SPI1_CR1.CPOL = true;
+			SPI1_CR1.MSTR = true;    // Master mode
+			SPI1_CR1.LSBFIRST = false; // MSB first
+			SPI1_CR1.RXONLY = false;
+			SPI1_CR1.DFF = false; // 8 bit frame
+			SPI1_CR1.SSM = true;
+			SPI1_CR1.SSI = true;
+
+			// speed
+			SPI1_CR1.BR = 0u; // Pclk / 2 = 4 MHz
+			
+			a5.mode_output(PIN_MODE.OUTPUT50MHz, OUTPUT_MODE.APUSH_PULL);
+			a7.mode_output(PIN_MODE.OUTPUT50MHz, OUTPUT_MODE.APUSH_PULL);
+			a6.mode_input(PIN_MODE.INPUT, INPUT_MODE.FLOATING);
+		}
+
+		void enable() { SPI1_CR1.SPE = true; }
+
+		void disable() { SPI1_CR1.SPE = false;}
+		
+		void write(uint8 b) {
+			while !SPI1_SR.TXE; // wait transmit buffer empty
+			SPI1_DR.DR = b;
+			while SPI1_SR.BSY; // wait transfer finish
+		}
+
+		void write_array(int8[] data) {
+			i = 0u;
+			while i < data.size {
+				while !SPI1_SR.TXE;
+				SPI1_DR.DR = data[i];
+				i++;
+			}
+			while SPI1_SR.BSY; // wait transfer finish
+		}
+
+		uint8 read() { return 0; }
+
+		bool has_data() { return false; }
+
+		bool start_transaction(uint16 address) { return true; }
+		void end_transaction() { }
+		void async_read_to(interrupt_i8 i) {}
+
+		databus_protocol get_protocol() {
+			return databus_protocol.SPI;
+		}
+	}
+
+	uart2 implements databus {
+		void setup(uint32 baud) {
+			APB1EN.usart2 = true; // enable usart2 clock
+			//AHBENR.sdio = true; // enable SDIO clock
+			APB2EN.afio = true; //? enable alternate function I/O clock
+			APB2EN.iopa = true; // port A clock
+
+			// set ports a2 (output TX) and a3 (input RX)
+			a2.mode_output(PIN_MODE.OUTPUT2MHz, OUTPUT_MODE.APUSH_PULL);
+			a3.mode_input(PIN_MODE.INPUT, INPUT_MODE.FLOATING);
+
+			// assuming reset configuration, that is 8 bits per byte,
+			// no parity checks, and 1 “stop bit”. 
+
+			// set baudrate
+			uartdiv = clock() / baud;
+			USART2_BRR.DIV_Fraction = uint4(uartdiv % 16);
+			USART2_BRR.DIV_Mantissa = uint12(uartdiv / 16);
+		}
+
+		void async_read_to(interrupt_i8 i) {}
+
+		void enable() {
+			USART2_CR1.RE = true; // receptor
+			USART2_CR1.TE = true; // transmiter
+			USART2_CR1.UE = true; // usart enable
+		}
+
+		void disable() {
+			USART2_CR1.UE = false;
+		}
+
+		void write(uint8 b) inline {
+			while !USART2_SR.TXE;
+			USART2_DR.DR = b;
+		}
+		
+		void write_array(int8[] data) {
+			i = 0u;
+			while i < data.size {
+				write(uint8(data[i]));
+				i++;
+			}
+		}
+		
+		uint8 read() { 
+			while !USART2_SR.RXNE;
+			return uint8(USART2_DR.DR);
+		}
+
+		bool has_data() {
+			return USART2_SR.RXNE;
+		}
+
+		bool start_transaction(uint16 address) { return true; }
+		void end_transaction() {}
+		
+		databus_protocol get_protocol() {
+			return databus_protocol.UART;
+		}
+	}
+
+	i2c1 implements databus {
+		/*
+		 * Supports I2C on pins PB6 and PB7
+		 */
+
+		void setup(uint32 speed) {
+			APB1EN.i2c1 = true; // enable I2C clock
+			AHBENR.sdio = true; // enable SDIO clock
+			APB2EN.afio = true; // enable alternate function I/O clock
+			APB2EN.iopb = true; // port b clock
+
+			// set ports B6 and B7 as alternate function I2C
+			b6.mode_output(PIN_MODE.OUTPUT50MHz, OUTPUT_MODE.AOPENDRAIN);
+			b7.mode_output(PIN_MODE.OUTPUT50MHz, OUTPUT_MODE.AOPENDRAIN);
+
+			// disable peripheral to configure
+			I2C1_CR1.pe = false;
+
+			/* How to compute the values below (assuming 8Mhz Clock, PRESCALER=1)
+			   fs == true and duty == true (400Khz)
+			     CCR = ((1/400000)/PRESCALER) / (25/8000000)
+                 CCR = 2500ns/3125ns = 0.8 = ~0 -> won't work at 8Mhz
+
+			   fs == true and duty == false (400Khz)
+			     CCR = ((1/400000)/PRESCALER) / (3/8000000)
+                 CCR = 2500ns/375ns = ~6.6667 = ~ 6
+
+			   TRISE calculated by PCLK (in MHz) * 0.3ms + 1
+			 */
+
+			I2C1_CCR.fs = true;
+			//I2C1_CCR.duty = true;
+			I2C1_CR2.freq = uint6(clock()/1E6); // no APB1 prescaler
+			I2C1_CCR.ccr = uint12(((1.0/400000)/2) / (3.0/clock()));
+			I2C1_TRISE = uint16(clock()/1E6*0.3+1);
+		}
+
+		void async_read_to(interrupt_i8 i) {}
+		
+		void enable() {
+			I2C1_CR1.pe = true;
+		}
+
+		void disable() {
+			APB1EN.i2c1 = false;
+			I2C1_CR1.pe = false;
+		}
+		
+		bool start_transaction(uint16 addr) {
+			// send start condition
+			I2C1_CR1.start = true;
+			while !I2C1_SR1.sb and !I2C1_SR2.msl and !I2C1_SR2.busy; // wait for start
+
+			// send address
+			I2C1_DR = addr;
+			while !I2C1_SR1.addr; // wait addr send
+
+			// clear ADDR condition
+			volatile temp = I2C1_SR2.msl;
+
+			return true;
+		}
+
+		void end_transaction() {
+            I2C1_CR1.stop = true;
+		}
+
+		void write(uint8 b) inline {
+			I2C1_DR = b;
+			while !I2C1_SR1.btf;
+		}
+
+		void write_array(int8[] data) {
+			i = 0u;
+			while (i < data.size) {
+				I2C1_DR = uint8(data[i]);
+				while !I2C1_SR1.btf;
+				i++;
+			}
+		}
+		
+		uint8 read() { return 0; }
+
+		bool has_data() { return false; }
+
+		databus_protocol get_protocol() {
+			return databus_protocol.I2C;
+		}
+	}
+}
