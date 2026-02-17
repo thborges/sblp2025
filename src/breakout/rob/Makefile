@@ -1,6 +1,4 @@
 INCLUDES=-I~/.platformio/packages/toolchain-atmelavr@1.70300.191015
-OPTS=-Os -mmcu=atmega328p -DF_CPU=16000000
-#OPTS+=--save-temps
 AVRDUDECFG=-C ~/.platformio/packages/tool-avrdude@1.60300.200527/avrdude.conf
 AVRDUDEPORT=`ls /dev/cu.usb*`
 
@@ -27,6 +25,13 @@ size: main.elf
 passes:
 	robcmp -a atmega328p -Oz -I . main.rob -s avr.rob -bdep > main.ll
 	opt -Oz -stats -disable-output main.ll
+
+calldepth: clean
+	robcmp -a atmega328p -Oz -I . main.rob -s avr.rob -bdep > out/main.ll
+	opt -passes='internalize,globaldce' -internalize-public-api-list=main -S out/main.ll -o out/cleaned.ll
+	opt -passes=dot-callgraph out/cleaned.ll -disable-output
+	python3.14 ../../common/calldepth.py out/*.dot
+
 
 test:
 	/usr/bin/time robcmp-simavr-debug -f main.elf -c 16000000 -m atmega328p -hw ssd1306 &> log.txt

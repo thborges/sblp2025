@@ -1,12 +1,13 @@
 OPTS=-Oz -nostdlibinc -nostdlib -mmcu=atmega328p -DF_CPU=16000000 -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections -fuse-init-array
 #OPTS+=--save-temps
-OPTS+=-gdwarf-4 -O1
+#OPTS+=-gdwarf-4 -O1
 
 AVRDUDECFG=-C ~/.platformio/packages/tool-avrdude@1.60300.200527/avrdude.conf
 AVRDUDEPORT=`ls /dev/cu.usb*`
 
 SRCS = $(wildcard **/*.cpp *.cpp)
 OBJS = $(patsubst %.cpp,out/%.o,$(SRCS))
+LLS = $(patsubst %.cpp,out/%.ll,$(SRCS))
 
 all: $(OBJS)
 	ld.lld -nostdlib -Bstatic --gc-sections --lto-whole-program-visibility --lto=thin -L../../common -Tatmega328p.ld -o main.elf $(OBJS) ../../common/avr5.o
@@ -18,6 +19,9 @@ all: $(OBJS)
 out/%.o : %.cpp
 	clang++ -target avr $(OPTS) -c $< -o $@
 	@#avr-c++ -Os $(OPTS) -c $< -o $@
+
+out/%.ll : %.cpp
+	
 
 %.hex : %.elf
 	llvm-objcopy -Oihex $< $@
@@ -35,6 +39,13 @@ passes: $(SRCS)
 	mv *.ll out/
 	llvm-link out/*.ll -S -o main.ll
 
+calldepth: clean $(LLS)
+	llvm-link out/*.ll -o out/merged.ll	
+	opt -passes='internalize,globaldce' -internalize-public-api-list=main -S out/merged.ll -o out/cleaned.ll	
+	opt -passes=dot-callgraph out/cleaned.ll -disable-output
+	python3.14 ../../common/calldepth.py out/*.dot
+
+
 test:
 	/usr/bin/time robcmp-simavr-debug -f main.elf -c 16000000 -m atmega328p -hw ssd1306 &> log.txt
 	@tail -n 1 log.txt
@@ -43,4 +54,5 @@ test:
 clean:
 	rm -f $(OBJS)
 	rm -f *.{ii,s,ll}
+	rm -f out/*.ll
 	rm -f main.{hex,elf,S}

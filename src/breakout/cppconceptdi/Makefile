@@ -7,6 +7,7 @@ AVRDUDEPORT=`ls /dev/cu.usb*`
 
 SRCS = $(wildcard **/*.cpp *.cpp)
 OBJS = $(patsubst %.cpp,out/%.o,$(SRCS))
+LLS = $(patsubst %.cpp,out/%.ll,$(SRCS))
 
 all: $(OBJS)
 	ld.lld -nostdlib -Bstatic --gc-sections --lto-whole-program-visibility --lto=thin -L../../common -Tatmega328p.ld -o main.elf $(OBJS) ../../common/avr5.o
@@ -17,6 +18,9 @@ all: $(OBJS)
 out/%.o : %.cpp
 	clang++ -target avr $(OPTS) -c $< -o $@
 	@#avr-c++ -Os $(OPTS) -c $< -o $@
+
+out/%.ll : %.cpp
+	clang++ -target avr $(OPTS) -S -emit-llvm $< -o $@
 
 %.hex : %.elf
 	llvm-objcopy -Oihex $< $@
@@ -33,6 +37,13 @@ passes: $(SRCS)
 	clang++ -flto -target avr -S -emit-llvm $(OPTS) $(SRCS)
 	mv *.ll out/
 	llvm-link out/*.ll -S -o main.ll
+
+calldepth: clean $(LLS)
+	llvm-link out/*.ll -o out/merged.ll	
+	opt -passes='internalize,globaldce' -internalize-public-api-list=main -S out/merged.ll -o out/cleaned.ll	
+	opt -passes=dot-callgraph out/cleaned.ll -disable-output
+	python3.14 ../../common/calldepth.py out/*.dot
+
 
 test:
 	/usr/bin/time robcmp-simavr-debug -f main.elf -c 16000000 -m atmega328p -hw ssd1306 &> log.txt

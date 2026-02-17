@@ -8,8 +8,8 @@ Firmware main.elf f=0 mmcu=
 MCU used was: atmega328p
 SPI init
 Starting an pty at uart0...
-uart_pty_init bridge on port *** /dev/ttys012 ***
-uart_pty_connect: /tmp/simavr-uart0 now points to /dev/ttys012
+uart_pty_init bridge on port *** /dev/ttys001 ***
+uart_pty_connect: /tmp/simavr-uart0 now points to /dev/ttys001
 note: export SIMAVR_UART_XTERM=1 and install picocom to get a terminal
 SSD1306: 37uS is 592 cycles for your AVR
 SSD1306: 1uS is 16 cycles for your AVR
@@ -19,4 +19,4 @@ Starting hardware...
 [0m[32mUse left/right arrows to move and space to pause..
 [0mTerminating simavr...
 Return value 0
-        7.26 real         7.68 user         0.29 sys
+        7.28 real         7.64 user         0.32 sys
