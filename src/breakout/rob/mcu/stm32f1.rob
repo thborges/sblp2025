@@ -362,6 +362,8 @@ type stm32f1 implements mcu {
 			while SPI1_SR.BSY; // wait transfer finish
 		}
 
+		void write_u16(uint16 b) {}
+
 		void write_array(int8[] data) {
 			i = 0u;
 			while i < data.size {
@@ -421,6 +423,21 @@ type stm32f1 implements mcu {
 			while !USART2_SR.TXE;
 			USART2_DR.DR = b;
 		}
+
+		void write_u16(uint16 b) {
+        	buffer = {0u:4};
+			i = 0u;
+			while i < 4 {
+				nibble = uint8((b >> (12-4*i)) & 0xF);
+				if nibble < 10 {
+					buffer[i] = '0' + nibble;
+				} else {
+					buffer[i] = 'A' + (nibble - 10);
+				}
+				i++;
+			}
+        	write_array(buffer);
+    	}
 		
 		void write_array(int8[] data) {
 			i = 0u;
@@ -518,6 +535,8 @@ type stm32f1 implements mcu {
 			I2C1_DR = b;
 			while !I2C1_SR1.btf;
 		}
+
+		void write_u16(uint16 b) { }
 
 		void write_array(int8[] data) {
 			i = 0u;

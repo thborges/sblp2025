@@ -4,7 +4,7 @@
  */
 
 #pragma once
-#include "../cppdeps.h"
+#include "../../../common/cppdeps.h"
 #include "interrupt.hpp"
 
 enum class databus_protocol {SPI, I2C, UART, CAN};

@@ -4,7 +4,7 @@
  */
 
 #pragma once
-#include "../cppdeps.h"
+#include "../../../common/cppdeps.h"
 #include "interrupt.hpp"
 
 enum class databus_protocol {SPI, I2C, UART, CAN};
@@ -15,6 +15,7 @@ concept databus = requires(T obj, uint32_t speed, uint8_t u8, uint16_t u16, char
     { obj.enable() } -> same_as<void>;
     { obj.disable() } -> same_as<void>;
     { obj.write(u8) } -> same_as<void>;
+    { obj.write_u16(u16) } -> same_as<void>;
     { obj.write_array(data, u8) } -> same_as<void>;
     { obj.read() } -> same_as<uint8_t>;
     { obj.has_data() } -> same_as<bool>;

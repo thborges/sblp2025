@@ -12,6 +12,7 @@ type game {
      mmcu = mcu();
      ddisplay = display();
      ccanvas = canvas();
+     uart = databus();
 
     // Bar related vars
      bar_middle = 0u;
@@ -27,28 +28,29 @@ type game {
     // Game status
      paused = false;
      gameover = false;
-     level = 0;
+     level = 0u;
      rem_blocks = 0u;
 
     // Blocks const and vars
      start_y = 0u;
-     const bottom_margin = 4;
+     const bottom_margin = 4u;
 
     /* The size and position of game elements
        blocks = 129/(width+1)
        use block width = 5, 21 blocks */
-     const block_size = 4;
-     const block_sizesp = 4+1;
-     const right_margin = 25 * block_sizesp - 1;
+     const block_size = 4u;
+     const block_sizesp = 5u; //4+1;
+     const right_margin = 25u * block_sizesp - 1u;
      blocks = {{true:25}:5};
 
     void process_game() {
+        check_level_done();
+
         move_bar();
         if !paused and !gameover {
             //mmcu.wait_ms(20);
             move_ball();
         }
-        check_level_done();
     }
 
     void move_bar() {
@@ -106,9 +108,13 @@ type game {
         // update blocks according to the level
         if level > 1 {
             i = 0u;
-            while i < level*10 {
-                arow = random16() % blocks.rows;
-                acol = random16() % blocks.cols;
+            total = blocks.rows * blocks.cols;
+            const step = 37u;
+
+            while i < level*5 {
+                idx = (level + uint16(i) * step) % total;
+                arow = idx / blocks.cols;
+                acol = idx % blocks.cols;
                 blocks[arow][acol] = true;
                 i++;
             }
@@ -131,9 +137,33 @@ type game {
             }
             row++;
             //mmcu.wait_ms(100); // animation effect
-            oled.update_frame();
+            //oled.update_frame();
         }
         //oled.update_frame();
+    }
+
+    void draw_game_uart(uint8 brow, uint8 bcol) {
+        uart.write_array("\nrow: ");
+        uart.write_u16(brow);
+        uart.write_array(" col: ");
+        uart.write_u16(bcol);
+        uart.write('\n');
+
+        // draw blocks
+        row = 0u;
+        while row < blocks.rows {
+            col = 0u;
+            while col < blocks.cols {
+                if blocks[row][col] {
+                    uart.write('.');
+                } else {
+                    uart.write(' ');
+                }
+                col++;
+            }
+            row++;
+            uart.write('\n');
+        }
     }
     
     void init_level() {
@@ -174,17 +204,18 @@ type game {
             bcol = ball_edge_x / block_sizesp;
     
             brow = (ball_pos_y + 1 - start_y) / block_sizesp;
-            if ball_dir_y == -1 {
+            if ball_dir_y == -1 and ball_pos_y >= start_y {
                 brow = (ball_pos_y - start_y) / block_sizesp;
             }
-            
+
             if (brow < blocks.rows and 
                 bcol < blocks.cols and 
                 blocks[brow][bcol]) {
-
+                
                 blocks[brow][bcol] = false;
                 rem_blocks--;
                 update_block(brow, bcol);
+                //draw_game_uart(brow, bcol);
 
                 hit_y = (ball_pos_y + 1 - start_y) % block_sizesp == 0;
                 hit_x = ball_pos_x % block_sizesp == 0;
@@ -229,6 +260,7 @@ type game {
             //set_level_debug();
             level = (level+1) % 30;
             init_level();
+            //draw_game_uart(0, 0);
             //paused = true;
         }
     }

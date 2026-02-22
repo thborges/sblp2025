@@ -7,8 +7,15 @@
 #include "intfs/display.hpp"
 #include "intfs/databus.hpp"
 
+#define STM32 1
+
+#ifdef AVR5
 #include "mcu/avr5_hardware.hpp"
-//#include "other_hardware.hpp"
+#elif STM32
+#include "mcu/stm32f1_hardware.hpp"
+#else
+#error "No MCU target defined."
+#endif
 
 #include "game.hpp"
 
@@ -37,6 +44,7 @@ void setup_hardware(mcu& mmcu,
 }
 
 int main() {   
+    #ifdef AVR
     avr5mcu mmcu;
     avr5_uart0 dbus_uart(mmcu);
 
@@ -47,8 +55,19 @@ int main() {
     avr5mcu_b4 b4;
     avr5mcu_b5 b5;
     avr5_spi spi(b3, b4, b5, b2);
+    
+    #elif STM32
+    stm32f1 mmcu;
+    stm32f1_uart2 dbus_uart(mmcu);
+
+    avr5mcu_port_b6 b6;
+    avr5mcu_port_b7 b7;
+    avr5mcu_port_b8 b8;
+    stm32f1_spi1 spi;
+    #endif
+
     ssd1306_framebuffer framebuffer;
-    ssd1306 oled(mmcu, b1, b0, b2, spi, framebuffer);
+    ssd1306 oled(mmcu, b7, b6, b8, spi, framebuffer);
     canvas8 canvas(framebuffer);
 
     setup_hardware(mmcu, oled, dbus_uart, spi);
@@ -60,6 +79,7 @@ int main() {
     while (true) {
         gm.process_game();
         oled.update_frame();
+        dbus_uart.write('-');
 
         if (gm.get_bar_width() == 10) {
             dbus_uart.write('$');

@@ -12,6 +12,7 @@ interface databus {
     void enable();
     void disable();
     void write(uint8 b);
+    void write_u16(uint16 b);
     void write_array(int8[] data);
     uint8 read();
     bool has_data();

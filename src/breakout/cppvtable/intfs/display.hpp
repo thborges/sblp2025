@@ -4,7 +4,7 @@
  */
 
 #pragma once
-#include "../cppdeps.h"
+#include "../../../common/cppdeps.h"
 
 enum class displayorientation {NORMAL, NORMAL_MIRRORED, UPSIDE_DOWN, UPSIDE_DOWN_MIRRORED};
 

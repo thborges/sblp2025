@@ -39,6 +39,6 @@ test:
 	@fgrep -o - log.txt | wc -l
 
 clean:
-	rm -f *.s *.ii *.o *.elf
+	rm -f *.s *.ii *.o out/*.o *.elf
 
 FORCE: ;

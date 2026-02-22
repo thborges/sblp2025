@@ -26,6 +26,9 @@ try:
                 print("start ^ received")
                 start_time = time.time()
                 at_count = 0
+            elif char == '-':
+                #ignore progress before start
+                pass
             else:
                 print(char, end='', flush=True)
         else:
@@ -33,12 +36,17 @@ try:
                 end_time = time.time()
                 delta = end_time - start_time
                 rate = at_count / delta if delta > 0 else 0
+                print()
                 print(f"Delta time: {delta:.6f} seconds")
-                print(f"@ per second: {rate:.2f}")
+                print(f"Frames count: {at_count}")
+                print(f"Frames per second: {rate:.2f}")
                 break
             elif char == '-':
-                print('.', end='', flush=True)
-                at_count += 256
+                if at_count % 256 == 0:
+                    print('.', end='', flush=True)
+                at_count += 1
+            else:
+                print(char, end='', flush=True)
 finally:
     ser.close()
 

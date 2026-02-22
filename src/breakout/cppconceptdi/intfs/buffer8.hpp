@@ -4,7 +4,7 @@
  */
  
 #pragma once
-#include "../cppdeps.h"
+#include "../../../common/cppdeps.h"
 #include "../graphic/envelope.hpp"
 
 class c_buffer8;

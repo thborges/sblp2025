@@ -6,8 +6,14 @@
 #include "intfs/mcu.hpp"
 #include "intfs/display.hpp"
 #include "intfs/databus.hpp"
+
+#define STM32 1
+
+#ifdef AVR
 #include "mcu/avr5_hardware.hpp"
-//#include "other_hardware.hpp"
+#elif STM32
+#include "mcu/stm32f1_hardware.hpp"
+#endif
 
 #include "game.hpp"
 
@@ -62,6 +68,7 @@ int main() {
     while (true) {
         gm.process_game();
         mapp.oled.update_frame();
+        mapp.dbus_uart.write('-');
 
         if (gm.get_bar_width() == 10) {
             mapp.dbus_uart.write('$');

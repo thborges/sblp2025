@@ -1,6 +1,6 @@
 
 #pragma once
-#include "../cppdeps.h"
+#include "../../../common/cppdeps.h"
 
 enum class port_mode {input = 0, output = 1};
 

@@ -1,0 +1,52 @@
+OPTS=-Oz -std=c++23 -nostdlibinc -nostdlib -fno-exceptions -fno-rtti
+#OPTS+=--save-temps
+#OPTS+=-O0 -gdwarf-4
+TARGET=-target thumbv7m-none-eabi -mcpu=cortex-m3 -mthumb
+OPENOCD=/Users/thborges/.platformio/packages/tool-openocd@2.1000.200630
+
+SRCS = $(wildcard mcu/stm32f1_*.cpp *.cpp)
+OBJS = $(patsubst %.cpp,out/%.o,$(SRCS))
+LLS = $(patsubst %.cpp,out/%.ll,$(SRCS))
+
+all: $(OBJS)
+	ld.lld --gc-sections -nostdlib -Bstatic -L../../common -Tstm32f1.ld -o main.elf out/*.o out/mcu/*.o ../../common/arm-eabi-libgcc.a ../../common/cortex-m3-arm-missing.o
+	arm-none-eabi-size main.elf
+	arm-none-eabi-objdump --no-addresses --demangle -D main.elf > main.S
+
+out/%.o : %.cpp
+	clang++ ${TARGET} $(OPTS) -c $< -o $@
+
+out/%.ll : %.cpp
+	clang++ ${TARGET} $(OPTS) -S -emit-llvm $< -o $@
+
+%.up: %.elf
+	${OPENOCD}/bin/openocd -f ${OPENOCD}/scripts/interface/stlink.cfg -f ${OPENOCD}/scripts/target/stm32f1x.cfg -c "program $< reset exit"
+
+size: main.elf
+	@#avr-nm -t o -C -S --size-sort $<
+	avr-readelf -WC -s main.elf|sed -E "s/ +/\t/g"
+
+passes: $(SRCS)
+	rm -f out/*.ll
+	clang++ -flto ${TARGET} -S -emit-llvm $(OPTS) $(SRCS)
+	mv *.ll out/
+	llvm-link out/*.ll -S -o main.ll
+
+calldepth: clean $(LLS)
+	llvm-link out/*.ll -o out/merged.ll	
+	opt -passes='internalize,globaldce' -internalize-public-api-list=main -S out/merged.ll -o out/cleaned.ll	
+	opt -passes=dot-callgraph out/cleaned.ll -disable-output
+	python3.14 ../../common/calldepth.py out/*.dot
+
+
+test:
+	/usr/bin/time robcmp-simavr-debug -f main.elf -c 16000000 -m atmega328p -hw ssd1306 &> log.txt
+	@tail -n 1 log.txt
+	@fgrep -o - log.txt | wc -l
+
+clean:
+	rm -f $(OBJS)
+	rm -f *.{ii,s,ll}
+	rm -f out/*.ll
+	rm -f out/mcu/*
+	rm -f main.{hex,elf,S}

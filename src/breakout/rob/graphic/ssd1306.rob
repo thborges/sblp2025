@@ -32,7 +32,7 @@ type ssd1306 implements display {
         uint16 height() inline { return buff.rows; }
         uint16 width() inline { return buff.cols; }
         
-        void clear_changes() inline {
+        void reset_changes() inline {
             changes.clear();
         }
 
@@ -243,6 +243,6 @@ type ssd1306 implements display {
         
         dbus.end_transaction();
         select.set(true);
-        framebuffer.clear_changes();
+        framebuffer.reset_changes();
     }
 }

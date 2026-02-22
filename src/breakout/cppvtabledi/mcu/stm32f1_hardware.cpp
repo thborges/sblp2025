@@ -1,0 +1,1 @@
+../../../common/stm32f1_hardware.cpp
