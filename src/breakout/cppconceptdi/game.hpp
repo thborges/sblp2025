@@ -20,27 +20,27 @@ private:
     int8_t bar_next_move = 0;
 
     // Ball related vars
-    int8_t ball_dir_x = 1;
-    int8_t ball_dir_y = 1;
+    signed char ball_dir_x = 1;
+    signed char ball_dir_y = 1;
     uint8_t ball_pos_x = 0u;
     uint8_t ball_pos_y = 0u;
 
     // Game status
     bool paused = false;
     bool gameover = false;
-    int8_t level = 0;
+    uint8_t level = 0;
     uint8_t rem_blocks = 0;
 
     // Blocks const and vars
     uint8_t start_y = 0u;
-    const int8_t bottom_margin = 4;
+    const uint8_t bottom_margin = 4;
 
     /* The size and position of game elements
        blocks = 129/(width+1)
        use block width = 5, 21 blocks */
-    const int8_t block_size = 4;
-    const int8_t block_sizesp = 4+1;
-    const int8_t right_margin = 25 * block_sizesp - 1;
+    const uint8_t block_size = 4;
+    const uint8_t block_sizesp = 4+1;
+    const uint8_t right_margin = 25 * block_sizesp - 1;
 
     const uint8_t blocks_rows = 5;
     const uint8_t blocks_cols = 25;
@@ -48,17 +48,21 @@ private:
 
 public:
     game(canvas8<bufferimpl>& canvas, displayimpl& display, mcuimpl& mmcu) :
-        canvas(canvas), display(display), mmcu(mmcu) {}
+        canvas(canvas), display(display), mmcu(mmcu) {
+        for(uint8_t r = 0; r < blocks_rows; r++)
+            for(uint8_t c = 0; c < blocks_cols; c++)
+                blocks[r][c] = true;            
+    }
 
     void process_game() {
+        check_level_done();
+
         move_bar();
 
         if (!paused && !gameover) {
             //mmcu.wait_ms(20);
             move_ball();
         }
-
-        check_level_done();
     }
 
     void move_bar() {
@@ -116,9 +120,13 @@ public:
         // update blocks according to the level
         if (level > 1) {
             uint8_t i = 0u;
-            while (i < level*10) {
-                auto arow = random16() % blocks_rows;
-                auto acol = random16() % blocks_cols;
+            uint8_t total = blocks_rows * blocks_cols;
+            const uint8_t step = 37u;
+
+            while (i < level*5) {
+                uint16_t idx = (level + i * step) % total;
+                uint8_t arow = idx / blocks_cols;
+                uint8_t acol = idx % blocks_cols;
                 blocks[arow][acol] = true;
                 i++;
             }
@@ -141,7 +149,7 @@ public:
             }
             row++;
             //mmcu.wait_ms(100); // animation effect
-            display.update_frame();
+            //display.update_frame();
         }
         //display.update_frame();
     }
@@ -184,7 +192,7 @@ public:
             uint8_t bcol = ball_edge_x / block_sizesp;
     
             uint8_t brow = (ball_pos_y + 1 - start_y) / block_sizesp;
-            if (ball_dir_y == -1) {
+            if (ball_dir_y == -1 && ball_pos_y >= start_y) {
                 brow = (ball_pos_y - start_y) / block_sizesp;
             }
             
@@ -195,6 +203,7 @@ public:
                 blocks[brow][bcol] = false;
                 rem_blocks--;
                 update_block(brow, bcol);
+                //draw_game_uart(brow, bcol);
 
                 auto hit_y = (ball_pos_y + 1 - start_y) % block_sizesp == 0;
                 auto hit_x = ball_pos_x % block_sizesp == 0;
@@ -239,6 +248,7 @@ public:
             //set_level_debug();
             level = (level+1) % 30;
             init_level();
+            //draw_game_uart(0, 0);
             //paused = true;
         }
     }

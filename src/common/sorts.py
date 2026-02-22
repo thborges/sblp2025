@@ -11,7 +11,7 @@ def parse_functions(lines):
         if re.match(r'^<.*>:$', line.strip()):
             if current_name is not None:
                 functions.append((current_name, current_body))
-            current_name = line
+            current_name = line.strip()[1:-2]
             current_body = []
             empty_lines = 0
         elif line.strip() == '':
@@ -34,10 +34,10 @@ def parse_functions(lines):
 def main():
     lines = sys.stdin.readlines()
     functions = parse_functions(lines)
-    functions.sort(key=lambda fn: fn[0].strip()[1:-2])  # extract name between < and >:
+    functions.sort(key=lambda fn: fn[0].lower())  # extract name between < and >:
 
     for name, body in functions:
-        sys.stdout.write(name)
+        sys.stdout.write('<' + name + '>:\n')
         sys.stdout.writelines(body)
         sys.stdout.write('\n')  # ensure spacing between functions
 

@@ -29,6 +29,7 @@ SECTIONS
     KEEP (*(SORT(.init_array.*)))
     KEEP (*(.init_array))
     __init_array_end = .;
+    KEEP(*(.ctors*))
   } > text
 
   .data : {

@@ -133,6 +133,8 @@ type avr5mcu implements mcu {
 			while !SPSR.SPIF;
 		}
 
+		void write_u16(uint16 b) inline { }
+
 		void write_array(int8[] data) {
 			i = 0u;
 			while i < data.size {
@@ -212,6 +214,8 @@ type avr5mcu implements mcu {
 			while !UCSR0A.UDRE0;
 			UDR0 = b;
 		}
+
+		void write_u16(uint16 b) inline { }
 
 		void write_array(int8[] data) {
 			i = 0u;

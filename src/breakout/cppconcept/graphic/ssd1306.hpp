@@ -206,7 +206,7 @@ public:
 
         dbus.start_transaction(address);
         if (dbus.get_protocol() == databus_protocol::I2C) {
-            //dbus.write(i2c_control::CMD_STREAM);
+            dbus.write((uint8_t)commands::CMD_STREAM);
         }
 
         dbus.write_array((char*)cmds, cmds_size);
@@ -235,13 +235,14 @@ public:
         if (ev.empty()) {
             return;
         }
+
         reset_cursor(ev.lx, ev.ly, ev.ux, ev.uy);
 
         datacmd.set(true);
         select.set(false);
         dbus.start_transaction(address);
         if (dbus.get_protocol() == databus_protocol::I2C) {
-            //dbus.write(i2c_control.DATA_STREAM);
+            dbus.write((uint8_t)commands::DATA_STREAM);
         }
 
         auto row = ev.ly;

@@ -7,6 +7,7 @@
 #include "../di.hpp"
 namespace di = boost::di;
 
+const auto nm_display = [] {};
 const auto nm_dbus_uart = [] {};
 
 using namespace di;
@@ -14,8 +15,8 @@ using namespace di;
 // injections
 auto breakout_injector = make_injector(
     bind<mcu>.to<avr5mcu>(),
-    bind<display>.to<ssd1306>(),
     bind<buffer8>.to<ssd1306_framebuffer>(),
+    bind<display>.named(nm_display).to<ssd1306>(),
     bind<databus>.named(nm_dbus_uart).to<avr5_uart0>(),
     bind<databus>.named(nm_dbus_display).to<avr5_spi>(),
 

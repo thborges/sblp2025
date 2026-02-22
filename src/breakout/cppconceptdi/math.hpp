@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "cppdeps.h"
+#include "../../common/cppdeps.h"
 
 const uint16_t uint16_max = 65535u;
 extern uint16_t random_seed16;

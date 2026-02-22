@@ -4,7 +4,7 @@
 #include "../intfs/mcu.hpp"
 #include "../intfs/ports.hpp"
 #include "../intfs/databus.hpp"
-#include "avr5_regs.hpp"
+#include "../../../common/avr5_regs.hpp"
 
 extern "C" {
     __attribute((naked)) void __delay_us();
@@ -80,6 +80,8 @@ public:
         *SPDR = b;
         while (!SPSR->SPIF);
     }
+
+    void write_u16(uint16_t b) { }
 
     void write_array(char data[], uint8_t data_size) {
         uint8_t i = 0u;
@@ -169,6 +171,8 @@ public:
         while (!UCSR0A->UDRE0);
         *UDR0 = b;
     }
+
+    void write_u16(uint16_t b) { }
 
     void write_array(char data[], uint8_t data_size) {
         uint8_t i = 0u;

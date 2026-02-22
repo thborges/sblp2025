@@ -1,11 +1,11 @@
 
 #pragma once
 
-#include "../cppdeps.h"
+#include "../../../common/cppdeps.h"
 #include "../intfs/mcu.hpp"
 #include "../intfs/ports.hpp"
 #include "../intfs/databus.hpp"
-#include "avr5_regs.hpp"
+#include "../../../common/avr5_regs.hpp"
 
 extern "C" {
     __attribute((naked)) void __delay_us();

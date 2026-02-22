@@ -26,25 +26,35 @@ SECTIONS
 		. = ALIGN(4);
 	} > FLASH
 
-	__data_init = LOADADDR(.data);
+	.init_array : {
+        . = ALIGN(4);
+        __init_array_start = .;
+        KEEP (*(.preinit_array*))
+        KEEP (*(SORT(.init_array.*)))
+        KEEP (*(.init_array*)) 
+        __init_array_end = .;
+    } > FLASH
 
     .data : {
-		__data_start = .;
-		*(.data)
-		*(.data.*)
 		. = ALIGN(4);
+		__data_start = .;
+		*(*.data*)
+        . = ALIGN(4);
 		__data_end = .;
 	} > RAM AT> FLASH
-	
-	.bss : 
-	{
+
+	__data_src_init = LOADADDR(.data);
+
+	.bss ADDR(.data) + SIZEOF(.data) : AT (ADDR (.bss)) {
+		. = ALIGN(4);
 		__bss_start = .;
-		*(.bss)
-		*(.bss.*)
+		*(.bss*)
 		*(COMMON)
 		. = ALIGN(4);
 		__bss_end = .;
 	} > RAM
 
+	__heap_start = LOADADDR(.data);
+  
 	.ARM.attributes 0 : { *(.ARM.attributes) }
 }

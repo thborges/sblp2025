@@ -1,0 +1,58 @@
+OPTS=-Oz -std=c++23 -nostdlibinc -nostdlib -mmcu=atmega328p -DF_CPU=16000000 -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections
+#OPTS+=--save-temps
+#OPTS+=-gdwarf-4 -O1
+
+AVRDUDECFG=-C ~/.platformio/packages/tool-avrdude/avrdude.conf
+AVRDUDEPORT=/dev/cu.SLAB_USBtoUART
+
+SRCS = $(wildcard mcu/avr5_*.cpp *.cpp)
+OBJS = $(patsubst %.cpp,out/%.o,$(SRCS))
+LLS = $(patsubst %.cpp,out/%.ll,$(SRCS))
+
+all: $(OBJS)
+	ld.lld -nostdlib -Bstatic --gc-sections --lto-whole-program-visibility --lto=thin -L../../common -Tatmega328p.ld -o main.elf $(OBJS) ../../common/avr5.o
+	@#avr-ld -nostdlib -Bstatic --gc-sections -L../../common -Tatmega328p.ld -o main.elf $(OBJS) ../../common/avr5.o
+	avr-size main.elf
+	avr-objdump --no-addresses --demangle -D main.elf > main.S
+
+out/%.o : %.cpp
+	clang++ -target avr $(OPTS) -c $< -o $@
+	@#avr-c++ -Os $(OPTS) -c $< -o $@
+
+out/%.ll : %.cpp
+	clang++ -target avr $(OPTS) -S -emit-llvm $< -o $@
+
+%.hex : %.elf
+	llvm-objcopy -Oihex $< $@
+
+%.up: %.hex
+	avrdude ${AVRDUDECFG} -v -V -c arduino -p m328p -b57600 -U flash:w:$<:i -P ${AVRDUDEPORT}
+
+size: main.elf
+	@#avr-nm -t o -C -S --size-sort $<
+	avr-readelf -WC -s main.elf|sed -E "s/ +/\t/g"
+
+passes: $(SRCS)
+	rm -f out/*.ll
+	clang++ -flto -target avr -S -emit-llvm $(OPTS) $(SRCS)
+	mv *.ll out/
+	llvm-link out/*.ll -S -o main.ll
+
+calldepth: clean $(LLS)
+	llvm-link out/*.ll -o out/merged.ll	
+	opt -passes='internalize,globaldce' -internalize-public-api-list=main -S out/merged.ll -o out/cleaned.ll	
+	opt -passes=dot-callgraph out/cleaned.ll -disable-output
+	python3.14 ../../common/calldepth.py out/*.dot
+
+
+test:
+	/usr/bin/time robcmp-simavr-debug -f main.elf -c 16000000 -m atmega328p -hw ssd1306 &> log.txt
+	@tail -n 1 log.txt
+	@fgrep -o - log.txt | wc -l
+
+clean:
+	rm -f $(OBJS)
+	rm -f *.{ii,s,ll}
+	rm -f out/*.ll
+	rm -f out/mcu/*.o
+	rm -f main.{hex,elf,S}

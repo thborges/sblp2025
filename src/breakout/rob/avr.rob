@@ -8,6 +8,7 @@ bind avr5mcu to ssd1306.mmcu singleton;
 bind avr5mcu to game.mmcu singleton;
 
 bind avr5mcu.uart0 to dbus_uart singleton;
+bind avr5mcu.uart0 to game.uart singleton;
 
 // SPI display
 bind avr5mcu.b0 to ssd1306.reset singleton;

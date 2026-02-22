@@ -2,20 +2,28 @@
  * Robcmp examples: Breakout game on a SSD1306 display
  */
 
-#include "cppdeps.h"
+#include "../../common/cppdeps.h"
 #include "intfs/ports.hpp"
 #include "intfs/mcu.hpp"
 #include "intfs/display.hpp"
 #include "intfs/databus.hpp"
 
+//#define STM33 1
+#define AVR5 1
+
+#ifdef AVR5
 #include "mcu/avr5_hardware.hpp"
-//#include "other_hardware.hpp"
+#elif STM32
+#include "mcu/stm32f1_hardware.hpp"
+#else
+#error "No MCU target defined."
+#endif
 
 #include "game.hpp"
 
 class app {
 public:
-    mcu& mmcu; 
+    mcu& mmcu;
     display& oled;
     databus& dbus_uart;
     databus& dbus_display;
@@ -24,7 +32,7 @@ public:
         mcu& mmcu, 
         (named = nm_dbus_uart) databus& dbus_uart, 
         (named = nm_dbus_display) databus& dbus_display,
-        display& oled) : 
+        (named = nm_display) display& oled) : 
         mmcu(mmcu), oled(oled), 
         dbus_uart(dbus_uart), dbus_display(dbus_display) {}
 
@@ -67,6 +75,7 @@ int main() {
     while (true) {
         gm.process_game();
         oled.update_frame();
+        dbus_uart.write('-');
 
         if (gm.get_bar_width() == 10) {
             dbus_uart.write('$');

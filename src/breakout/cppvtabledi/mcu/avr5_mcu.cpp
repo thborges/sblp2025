@@ -1,10 +1,10 @@
 
-#include "../cppdeps.h"
+#include "../../../common/cppdeps.h"
 #include "../di.hpp"
 #include "../intfs/mcu.hpp"
 #include "../intfs/ports.hpp"
 #include "../intfs/databus.hpp"
-#include "avr5_regs.hpp"
+#include "../../../common/avr5_regs.hpp"
 
 extern "C" __attribute((naked)) void __delay_us();
 extern "C" void busy_wait_loop5(uint16_t count);

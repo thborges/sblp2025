@@ -8,6 +8,7 @@ bind stm32f1 to ssd1306.mmcu singleton;
 bind stm32f1 to game.mmcu singleton;
 
 bind stm32f1.uart2 to dbus_uart singleton;
+bind stm32f1.uart2 to game.uart singleton;
 
 // SPI display
 bind stm32f1.b6 to ssd1306.reset singleton;
